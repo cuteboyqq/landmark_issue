@@ -24,8 +24,8 @@ w_r = roi.shape[1]
 
 h = img.shape[0]
 w = img.shape[1]
-ratio_w = 1.0
-ratio_h = 1.0
+ratio_w = 1.25
+ratio_h = 1.25
 roi_l = np.ones((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
 roi_l_tmp = np.zeros((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
 img_roi = np.ones((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
@@ -33,11 +33,13 @@ img_roi = np.ones((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
 
 roi_s = np.ones((int(h_r/2.0),int(w_r/2.0), 3), dtype=np.uint8)
 roi_s_tmp = np.ones((int(h_r/2.0),int(w_r/2.0), 3), dtype=np.uint8)
+img_roi_s = np.ones((int(h_r/2.0),int(w_r/2.0), 3), dtype=np.uint8)
 
 y = random.randint(int(h*float(4/5)),h)
-if y> h*5/6:
-    ratio_w = 1.0
-    ratio_h = 1.0
+
+Carhood = h*0.95
+
+if y> h*5/6 and y<Carhood:
     print("case 1 ")
     roi_l = cv2.resize(roi,(int(w_r*ratio_w),int(h_r*ratio_h)),interpolation=cv2.INTER_NEAREST)
     roi_mask = cv2.resize(roi_mask,(int(w_r*ratio_w),int(h_r*ratio_h)),interpolation=cv2.INTER_NEAREST)
@@ -46,18 +48,25 @@ if y> h*5/6:
     w_r = int(w_r*ratio_h)
     
     img_roi = img[y-h_r:y,x-w_r:x]
-    roi_l_tmp[roi_mask==255] = roi_l[roi_mask==255]
+    roi_l_tmp[roi_mask>0] = roi_l[roi_mask>0]
     roi_l_tmp[roi_mask==0] = img_roi[roi_mask==0]
     
     #Wrong result, need to get rid of background
     img[y-h_r:y,x-w_r:x] = roi_l_tmp
-    
-else:
+    cv2.imshow("roi_l_tmp",roi_l_tmp)
+elif y< h*5/6 :
     print("case 2 ")
     x = random.randint(int(w*9/20),int(w*11/20))
+    roi_mask = cv2.resize(roi_mask,(int(w_r/2.0),int(h_r/2.0)),interpolation=cv2.INTER_NEAREST)
     roi_s = cv2.resize(roi,(int(w_r/2.0),int(h_r/2.0)),interpolation=cv2.INTER_NEAREST)
     h_r = int(h_r/2.0)
     w_r = int(w_r/2.0)
+    
+    img_roi_s = img[y-h_r:y,x-w_r:x]
+    roi_s_tmp[roi_mask>0] = roi_s[roi_mask>0]
+    roi_s_tmp[roi_mask==0] = img_roi_s[roi_mask==0]
+    cv2.imshow("img_roi_s",img_roi_s)
+    img[y-h_r:y,x-w_r:x] = roi_s_tmp
     #Wrong result, need to get rid of background
     #img[y-h_r:y,x-w_r:x] = roi_s
 
