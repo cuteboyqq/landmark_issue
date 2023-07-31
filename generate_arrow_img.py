@@ -15,8 +15,8 @@ import random
 img = cv2.imread("./raw_img/2076.jpg")
 print(img.shape)
 
-roi = cv2.imread("111.jpg")
-roi_mask = cv2.imread("111_mask.jpg")
+roi = cv2.imread("105.jpg")
+roi_mask = cv2.imread("105_mask.jpg")
 
 h_r = roi.shape[0]
 w_r = roi.shape[1]
@@ -24,8 +24,8 @@ w_r = roi.shape[1]
 
 h = img.shape[0]
 w = img.shape[1]
-ratio_w = 1.25
-ratio_h = 1.25
+ratio_w = 1.4
+ratio_h = 1.4
 roi_l = np.ones((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
 roi_l_tmp = np.zeros((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
 img_roi = np.ones((int(h_r*ratio_w),int(w_r*ratio_w), 3), dtype=np.uint8)
@@ -48,13 +48,13 @@ if y> h*5/6 and y<Carhood:
     w_r = int(w_r*ratio_h)
     
     img_roi = img[y-h_r:y,x-w_r:x]
-    roi_l_tmp[roi_mask>0] = roi_l[roi_mask>0]
-    roi_l_tmp[roi_mask==0] = img_roi[roi_mask==0]
+    roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20]
+    roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20]
     
     #Wrong result, need to get rid of background
     img[y-h_r:y,x-w_r:x] = roi_l_tmp
     cv2.imshow("roi_l_tmp",roi_l_tmp)
-elif y< h*5/6 :
+elif y<= h*5/6 :
     print("case 2 ")
     x = random.randint(int(w*9/20),int(w*11/20))
     roi_mask = cv2.resize(roi_mask,(int(w_r/2.0),int(h_r/2.0)),interpolation=cv2.INTER_NEAREST)
@@ -63,12 +63,14 @@ elif y< h*5/6 :
     w_r = int(w_r/2.0)
     
     img_roi_s = img[y-h_r:y,x-w_r:x]
-    roi_s_tmp[roi_mask>0] = roi_s[roi_mask>0]
-    roi_s_tmp[roi_mask==0] = img_roi_s[roi_mask==0]
+    roi_s_tmp[roi_mask>20] = roi_s[roi_mask>20]
+    roi_s_tmp[roi_mask<=20] = img_roi_s[roi_mask<=20]
     cv2.imshow("img_roi_s",img_roi_s)
     img[y-h_r:y,x-w_r:x] = roi_s_tmp
     #Wrong result, need to get rid of background
     #img[y-h_r:y,x-w_r:x] = roi_s
+else:
+    print("at Carhood, pass!")
 
 
 
