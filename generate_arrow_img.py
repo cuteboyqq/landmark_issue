@@ -110,7 +110,7 @@ def Generate_Landmark_Img(img_path=None,
 
     print("left_line_point_x:{}".format(left_line_point_x))
     search_x = x
-    right_line_point_x = 0
+    right_line_point_x = left_line_point_x + 2
     while(search_x<label_mask.shape[1]):
         if label[y][search_x][0]==label[y][x][0]:
             search_x +=1
@@ -133,18 +133,31 @@ def Generate_Landmark_Img(img_path=None,
     roi_w, roi_h = roi.shape[1], roi.shape[0]
 
     final_roi_w = road_width * 0.40
+    print("final_roi_w:{}".format(final_roi_w))
     resize_ratio = float(final_roi_w/roi_w)
+    print("initial resize_ratio:{}".format(resize_ratio))
+    if int(h_r*resize_ratio) < label_mask.shape[0]/3.0 and int(w_r*resize_ratio)<label_mask.shape[1]/3.0:
+        resize_ratio = float(final_roi_w/roi_w)
+        print("resize_ratio case 1 ")
+    else:
+        resize_ratio = float(int(label_mask.shape[1]/3.0)/roi_w) #if no line, drivable area is too large
+        print("resize_ratio case 2 ")
+
+    print("resize_ratio:{}".format(resize_ratio))
+
     final_roi_h = int(roi_h * resize_ratio)
-    if road_width == 0 or float(final_roi_w/roi_w)==0 or resize_ratio==0:
+    if road_width <  10 or float(final_roi_w/roi_w)==0 or resize_ratio==0:
         return
     
     #roi_resize = cv2.resize(roi,(final_roi_w,final_roi_h),interpolation=cv2.INTER_NEAREST)
-
     roi_l = np.ones((int(h_r*resize_ratio),int(w_r*resize_ratio), 3), dtype=np.uint8)
     roi_l_tmp = np.zeros((int(h_r*resize_ratio),int(w_r*resize_ratio), 3), dtype=np.uint8)
     img_roi = np.ones((int(h_r*resize_ratio),int(w_r*resize_ratio), 3), dtype=np.uint8)
-
-   
+    
+    print("h_r:{}".format(h_r))
+    print("w_r:{}".format(w_r))
+    print("h_r*resize_ratio:{}".format(h_r*resize_ratio))
+    print("w_r*resize_ratio:{}".format(w_r*resize_ratio))
 
     
     if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
