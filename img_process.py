@@ -32,8 +32,8 @@ import os
 #========================
 #Step 0 :loading image
 #========================
-raw_img = cv2.imread('./imgs/8b00.jpg')
-img = cv2.imread('./imgs/8b00.jpg')
+raw_img = cv2.imread('./img/b5bb11f2-227b8c25.jpg')
+img = cv2.imread('./img/b5bb11f2-227b8c25.jpg')
 # 查看資料型態
 print(type(img))
 print(img.shape)
@@ -60,7 +60,7 @@ blurred = cv2.GaussianBlur(img, (5, 5), 0)
 edge = cv2.Canny(blurred, t_lower, t_upper, L2gradient = L2Gradient ) #Get Canny image
 
 imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
-ret, thresh = cv2.threshold(imgray, 180, 255, 0) #imput Gray image, output Binary images (Mask)
+ret, thresh = cv2.threshold(imgray, 150, 255, 0) #imput Gray image, output Binary images (Mask)
 
 kernel = np.ones((3, 3), np.uint8)
   
@@ -80,8 +80,11 @@ contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_S
 mask = np.zeros(img.shape, np.uint8)
 for c in contours:
     color = (rng.randint(0,256), rng.randint(0,256), rng.randint(0,256))
-    cv2.drawContours(mask, c, -1, color , cv2.CHAIN_APPROX_SIMPLE)
-
+    
+    area = cv2.contourArea(c)
+    print("area: {}".format(area))
+    if area > 400:
+        cv2.drawContours(mask, c, -1, color , cv2.CHAIN_APPROX_SIMPLE)
 
 contours_poly = [None]*len(contours)
 boundRect = [None]*len(contours)
@@ -94,7 +97,7 @@ for i, c in enumerate(contours):
     contours_poly[i] = cv2.approxPolyDP(c,3, True)#3
     boundRect[i] = cv2.boundingRect(contours_poly[i])
     centers[i], radius[i] = cv2.minEnclosingCircle(contours_poly[i])
-
+   
 drawing = np.ones((edge.shape[0], edge.shape[1], 3), dtype=np.uint8)
 #========================================
 #Create folders
@@ -122,8 +125,8 @@ for i in range(len(contours)):
     #=====================================================================
     small_r = 0.13
     large_r = 7.0
-    small_size = 3600#img_h*img_w/100
-    large_size = 70000#img_h*img_w/1
+    small_size = 400#img_h*img_w/100
+    large_size = 50000#img_h*img_w/1
     if w*h > small_size and w*h < large_size and y> (edge.shape[0]*1.0/3.0) \
         and float(w/h)>small_r and float(w/h)<large_r:
         
@@ -153,7 +156,7 @@ for i in range(len(contours)):
         #=========================================================
         cv2.drawContours(img, contours_poly, i%255 , cv2.CHAIN_APPROX_SIMPLE)
         cv2.rectangle(img, (int(boundRect[i][0]), int(boundRect[i][1])), \
-    (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 2)
+    (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 6)
      
     #cv2.circle(drawing, (int(centers[i][0]), int(centers[i][1])), int(radius[i]), color, 1)
 
