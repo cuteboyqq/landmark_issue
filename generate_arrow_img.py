@@ -11,6 +11,10 @@ import numpy as np
 import random
 import glob
 import random
+import logging
+
+logger = logging.getLogger('my-logger')
+logger.propagate = False
 
 def Analysis_path(img_path):
     img = img_path.split("/")[-1]
@@ -64,6 +68,9 @@ def Generate_Landmark_Img(img_path=None,
     roi = cv2.imread(roi_path)
     roi_mask = cv2.imread(roi_mask_path)
 
+    
+        
+
     h_r = roi.shape[0]
     w_r = roi.shape[1]
 
@@ -83,7 +90,7 @@ def Generate_Landmark_Img(img_path=None,
 
     # Carhood = h*0.80
     if vanish_y < carhood_y:
-        y = random.randint(int(vanish_y),carhood_y)
+        y = random.randint(int(vanish_y),carhood_y-1) #carhood_y
     else:
         y = random.randint(int(img.shape[0]/2.0),int(img.shape[0]*5.0/6.0))
 
@@ -131,16 +138,18 @@ def Generate_Landmark_Img(img_path=None,
     
 
     roi_w, roi_h = roi.shape[1], roi.shape[0]
+    #Set landmark width (initial setting)
+    final_roi_w = road_width * 0.50
 
-    final_roi_w = road_width * 0.40
     print("final_roi_w:{}".format(final_roi_w))
     resize_ratio = float(final_roi_w/roi_w)
     print("initial resize_ratio:{}".format(resize_ratio))
-    if int(h_r*resize_ratio) < label_mask.shape[0]/3.0 and int(w_r*resize_ratio)<label_mask.shape[1]/3.0:
+    if road_width <= img.shape[1]*3/5:
         resize_ratio = float(final_roi_w/roi_w)
         print("resize_ratio case 1 ")
     else:
-        resize_ratio = float(int(label_mask.shape[1]/3.0)/roi_w) #if no line, drivable area is too large
+        final_roi_w = road_width * 0.30
+        resize_ratio = float(final_roi_w/roi_w) #if no line, lane width is too large
         print("resize_ratio case 2 ")
 
     print("resize_ratio:{}".format(resize_ratio))
@@ -158,63 +167,116 @@ def Generate_Landmark_Img(img_path=None,
     print("w_r:{}".format(w_r))
     print("h_r*resize_ratio:{}".format(h_r*resize_ratio))
     print("w_r*resize_ratio:{}".format(w_r*resize_ratio))
-
-    
-    if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
-        print("case 1 ")
-        roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
-        roi_mask = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
-        x = final_x
-        h_r = int(h_r*resize_ratio)
-        print("h_r = {}".format(h_r))
-        h_add = 0
-        if h_r%2!=0:
-           h_add = 1
-
-        w_r = int(w_r*resize_ratio)
-        print("w_r = {}".format(w_r))
-        w_add = 0
-        if w_r%2!=0:
-            w_add = 1
-        #input()
-        img_roi = img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
-        print("roi_l_tmp {}".format(roi_l_tmp.shape))
-        print("img_roi {}".format(img_roi.shape))
-        roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20]
-        roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20]
-    
-        #Wrong result, need to get rid of background
-        #filter landmark location at line area 2023-08-08
-        is_line_area = False
-        use_line_label = True
-        if use_line_label:
-            for i in range(y-int(h_r/2.0),y+int(h_r/2.0)):
-                for j in range(x-int(w_r/2.0),x+int(w_r/2.0)):
-                    if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
-                        is_line_area=True
-
-        if not is_line_area:  
-            img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
-        else:
-            print("ROI is at line label area, skip~~")
-            #input()
-        #cv2.imshow("roi_l_tmp",roi_l_tmp)
-    
+    USE_OPENCV = True
+    method_choose = random.randint(1,2)
+    if method_choose==1:
+        USE_OPENCV = True
+        print("USE_OPENCV")
     else:
-        print("at Carhood, pass!")
+        USE_OPENCV = False
+        print("USE_MASK")
+    
+    #USE_OPENCV = False
+    if USE_OPENCV:
+        if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
+            roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
+            roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
+            roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
+            ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
+            contours, hierarchy = cv2.findContours(roi_mask_l, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            contours_poly = [None]*len(contours)
+            # for i, c in enumerate(contours):
+            #     contours_poly[i] = cv2.approxPolyDP(c,3, True)#3
+            mask = 255 * np.ones(roi_mask_l.shape, roi_mask_l.dtype)
+            center = (final_x,y)
+            #filter landmark location at line area 2023-08-08
+            is_line_area = False
+            use_line_label = True
+            x = final_x
+            if use_line_label:
+                for i in range(y-int(h_r/2.0),y+int(h_r/2.0)):
+                    for j in range(x-int(w_r/2.0),x+int(w_r/2.0)):
+                        if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
+                            is_line_area=True
+            #Use try-except to ignore errors : 
+            # https://stackoverflow.com/questions/38707513/ignoring-an-error-message-to-continue-with-the-loop-in-python
+            if not is_line_area:
+                try:  
+                    output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE)
+                except:
+                    output1 = img
+                    pass
+            else:
+                output1 = img
+
+            if show_img:
+                cv2.imshow("output1",output1) #img
+            if save_landmark_img:
+                image, img_name = Analysis_path(img_path)
+                landmark_img = image
+                os.makedirs("./fake_landmark_image_test",exist_ok=True)
+                cv2.imwrite(os.path.join("./fake_landmark_image_test/",landmark_img),output1)
+        else:
+            print("at Carhood, pass!")
+    else: #Use Mask method
+        if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
+            print("case 1 ")
+            roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
+            roi_mask = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio)),interpolation=cv2.INTER_NEAREST)
+            x = final_x
+            h_r = int(h_r*resize_ratio)
+            print("h_r = {}".format(h_r))
+            h_add = 0
+            if h_r%2!=0:
+                h_add = 1
+
+            w_r = int(w_r*resize_ratio)
+            print("w_r = {}".format(w_r))
+            w_add = 0
+            if w_r%2!=0:
+                w_add = 1
+            #input()
+            img_roi = img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
+            print("roi_l_tmp {}".format(roi_l_tmp.shape))
+            print("img_roi {}".format(img_roi.shape))
+            roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20]
+            roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20]
+        
+            #Wrong result, need to get rid of background
+            #filter landmark location at line area 2023-08-08
+            is_line_area = False
+            use_line_label = True
+            if use_line_label:
+                for i in range(y-int(h_r/2.0),y+int(h_r/2.0)):
+                    for j in range(x-int(w_r/2.0),x+int(w_r/2.0)):
+                        if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
+                            is_line_area=True
+
+            if not is_line_area:  
+                img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
+            else:
+                print("ROI is at line label area, skip~~")
+                #input()
+            #cv2.imshow("roi_l_tmp",roi_l_tmp)
+            if show_img:
+                cv2.imshow("img",img) #img
+
+            if save_landmark_img:
+                image, img_name = Analysis_path(img_path)
+                landmark_img = image
+                os.makedirs("./fake_landmark_image_test",exist_ok=True)
+                cv2.imwrite(os.path.join("./fake_landmark_image_test/",landmark_img),img)
+        else:
+            print("at Carhood, pass!")
 
     
-    if save_landmark_img:
-        image, img_name = Analysis_path(img_path)
-        landmark_img = image
-        os.makedirs("./fake_landmark_image",exist_ok=True)
-        cv2.imwrite(os.path.join("./fake_landmark_image/",landmark_img),img)
+    
     if show_img:
-        cv2.imshow("img",img)
+        #cv2.imshow("img",img)
         cv2.imshow("roi",roi)
         cv2.imshow("roi_mask",roi_mask)
         #按下任意鍵則關閉所有視窗
-        cv2.waitKey(1)
+        cv2.waitKey(1000)
         cv2.destroyAllWindows()
 
 
@@ -285,16 +347,21 @@ def get_args():
 
 if __name__=="__main__":
 
-    img_path = "./imgs/b4dd1c23-355940ff.jpg"
-    roi_path = "./roi/113.jpg"
-    roi_mask_path = "./mask/113.jpg"
-    label_path = "./labels/b4dd1c23-355940ff.png"
-    line_label_path = "./line_label/b4dd1c23-355940ff.png"
-    # Generate_Landmark_Img(img_path,
-    #                       roi_path,
-    #                       roi_mask_path,
-    #                       line_label_path,
-    #                       label_path)
+    img_path = "./datasets/imgs/b4dd1c23-355940ff.jpg"
+    roi_path = "./roi/45.jpg"
+    roi_mask_path = "./mask/45.jpg"
+    label_path = "./datasets/labels/b4dd1c23-355940ff.png"
+    line_label_path = "./datasets/line_label/b4dd1c23-355940ff.png"
+
+    INFER_ONE_IMG=True
+    if INFER_ONE_IMG:
+        Generate_Landmark_Img(img_path=img_path,
+                                roi_path=roi_path,
+                                roi_mask_path=roi_mask_path,
+                                label_path=label_path,
+                                line_label_path=line_label_path,
+                                save_landmark_img=True,
+                                show_img=True)
 
     args = get_args()
     img_dir = args.img_dir
@@ -315,11 +382,13 @@ if __name__=="__main__":
     # save_landmark_img = True
     # generate_number = 10000
     # show_img = False
-    Generate_landmark_Imgs(img_dir,
-                           label_dir,
-                           line_label_dir,
-                           roi_dir,
-                           roi_mask_dir,
-                           save_landmark_img,
-                           generate_number,
-                           show_img)
+    USE_FOLDER_DATASET=False
+    if USE_FOLDER_DATASET:
+        Generate_landmark_Imgs(img_dir,
+                            label_dir,
+                            line_label_dir,
+                            roi_dir,
+                            roi_mask_dir,
+                            save_landmark_img,
+                            generate_number,
+                            show_img)

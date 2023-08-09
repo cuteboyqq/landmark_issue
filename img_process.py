@@ -32,8 +32,8 @@ import os
 #========================
 #Step 0 :loading image
 #========================
-raw_img = cv2.imread('./img/b5bb11f2-227b8c25.jpg')
-img = cv2.imread('./img/b5bb11f2-227b8c25.jpg')
+raw_img = cv2.imread('./datasets/landmark_img/8526a3b2-b5317e10.jpg')
+img = cv2.imread('./datasets/landmark_img/8526a3b2-b5317e10.jpg')
 # 查看資料型態
 print(type(img))
 print(img.shape)
@@ -60,7 +60,7 @@ blurred = cv2.GaussianBlur(img, (5, 5), 0)
 edge = cv2.Canny(blurred, t_lower, t_upper, L2gradient = L2Gradient ) #Get Canny image
 
 imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
-ret, thresh = cv2.threshold(imgray, 150, 255, 0) #imput Gray image, output Binary images (Mask)
+ret, thresh = cv2.threshold(imgray, 127, 255, 0) #imput Gray image, output Binary images (Mask)
 
 kernel = np.ones((3, 3), np.uint8)
   
@@ -123,11 +123,12 @@ for i in range(len(contours)):
     # 2.Contour is at the upper of the image
     # 3.Ratio is too small or too large
     #=====================================================================
-    small_r = 0.13
-    large_r = 7.0
-    small_size = 400#img_h*img_w/100
+    small_r = 0.01
+    large_r = 100.0
+    small_size = 200#img_h*img_w/100
     large_size = 50000#img_h*img_w/1
-    if w*h > small_size and w*h < large_size and y> (edge.shape[0]*1.0/3.0) \
+    print("w*h:{}".format(w*h))
+    if w*h > small_size and w*h < large_size and y> (edge.shape[0]*1.0/5.0) \
         and float(w/h)>small_r and float(w/h)<large_r:
         
         #====================================
