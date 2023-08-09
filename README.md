@@ -3,6 +3,17 @@
 ```
 python generate_arrow_img.py
 ```
+### you can set parameter, the detail parameter is below
+```
+parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train")
+    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/drivable/colormaps/train")
+    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/lane/masks/train")
+    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/roi")
+    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/mask")
+    parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
+    parser.add_argument('-numimg','--num-img',type=int,default=10000,help='number of generate fake landmark images')
+    parser.add_argument('-show','--show',action='store_true',help='show images result')
+```
 ## generate landmark ROI
 ```
 python img_process.py
