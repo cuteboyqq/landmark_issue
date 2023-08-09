@@ -1,9 +1,9 @@
 # landmark_issue
-## generate landmark images
+## generate new image with landmark
 ```
 python generate_arrow_img.py
 ```
-## generate landmark images
+## generate landmark ROI
 ```
 python img_process.py
 ```
