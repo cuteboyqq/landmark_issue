@@ -1,4 +1,12 @@
 # landmark_issue
+## generate landmark images
+```
+python generate_arrow_img.py
+```
+## generate landmark images
+```
+python img_process.py
+```
 ## reslut images
 ![0a7b0436-1a46bb12](https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a)
 ![0a14abcb-e1a9d5d9](https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059)
