@@ -22,18 +22,24 @@ def Analysis_path(img_path):
     return img, img_name
 
 def Generate_Landmark_Img(img_path=None,
-                          roi_path=None,
+                           roi_path=None,
                           roi_mask_path=None,
                           label_path=None,
                           line_label_path=None,
                           save_landmark_img=False,
                           show_img=False):
+
+    DEBUG_MODE = True
     label = cv2.imread(label_path)
-    line_label = cv2.imread(line_label_path)
+    use_line_label=False
+    if use_line_label:
+        line_label = cv2.imread(line_label_path)
     label_gray = cv2.cvtColor(label,cv2.COLOR_BGR2GRAY)
     _, label_mask = cv2.threshold(label_gray, 127, 255, 0)
-    #cv2.imshow("label_mask",label_mask)
-    #cv2.imshow("label",label)
+    cv2.imshow("label_mask",label_mask)
+    cv2.imshow("label",label)
+    if use_line_label:
+        cv2.imshow("line_label",line_label)
     vanish_y = 0
     get_vanish = False
     # print(label_mask.shape[0])
@@ -54,17 +60,26 @@ def Generate_Landmark_Img(img_path=None,
     for i in range(label_mask.shape[0]-1,0,-1):
         if not get_carhood_y:
             for j in range(label_mask.shape[1]):
-                if label_mask[i][j]>0:
+                if label_mask[i][j]>0: #0 is background, 255 is drivable area
                     carhood_y = i
                     get_carhood_y = True
 
     carhood_y = carhood_y - int(label_mask.shape[0]/7.0)
     print("get_carhood_y:{} ~{}".format(get_carhood_y,carhood_y))
     #input()
-
+    
     img = cv2.imread(img_path)
     print(img.shape)
+    if DEBUG_MODE:
+        img = cv2.addWeighted(img,1.0,label,0.15,0)
 
+
+    if DEBUG_MODE:
+        start_point = (int(img.shape[1]/2.0),vanish_y)
+        end_point = (int(img.shape[1]/2.0),carhood_y)
+        color = (0,255,0)
+        thickness = 4
+        img = cv2.line(img, start_point, end_point, color, thickness)
     roi = cv2.imread(roi_path)
     roi_mask = cv2.imread(roi_mask_path)
 
@@ -109,9 +124,9 @@ def Generate_Landmark_Img(img_path=None,
     #(r,g,b) = label[y][x]
     print(label[y][x])
     while(search_x>0):
-        if label[y][search_x][0]== label[y][x][0]:
+        if label[y][search_x][0]== label[y][x][0]: # At the same color, means at the same drivable area
             search_x -=1
-        elif not label[y][search_x][0]== label[y][x][0] :
+        elif not label[y][search_x][0]== label[y][x][0] : # Not the same color,means it is at boundary of drivable area
             left_line_point_x = search_x
             break
 
@@ -129,8 +144,17 @@ def Generate_Landmark_Img(img_path=None,
 
     print("right_line_point_x:{}".format(right_line_point_x))
 
+    
+    #Draw the width of the drivable area at y
+    if DEBUG_MODE:
+        start_point = (left_line_point_x,y)
+        end_point = (right_line_point_x,y)
+        color = (255,0,0)
+        thickness = 4
+        img = cv2.line(img, start_point, end_point, color, thickness)
 
     final_x = int((left_line_point_x + right_line_point_x )/2.0)
+
     print("final_x:{}".format(final_x))
     print("final_y:{}".format(y))
     road_width = abs(right_line_point_x - left_line_point_x)
@@ -139,7 +163,7 @@ def Generate_Landmark_Img(img_path=None,
 
     roi_w, roi_h = roi.shape[1], roi.shape[0]
     #Set landmark width (initial setting)
-    final_roi_w = road_width * 0.50
+    final_roi_w = road_width * 0.40
 
     print("final_roi_w:{}".format(final_roi_w))
     resize_ratio = float(final_roi_w/roi_w)
@@ -191,7 +215,7 @@ def Generate_Landmark_Img(img_path=None,
             center = (final_x,y)
             #filter landmark location at line area 2023-08-08
             is_line_area = False
-            use_line_label = True
+            use_line_label = False
             x = final_x
             if use_line_label:
                 for i in range(y-int(h_r/2.0),y+int(h_r/2.0)):
@@ -245,16 +269,18 @@ def Generate_Landmark_Img(img_path=None,
             #Wrong result, need to get rid of background
             #filter landmark location at line area 2023-08-08
             is_line_area = False
-            use_line_label = True
+            use_line_label = False
             if use_line_label:
                 for i in range(y-int(h_r/2.0),y+int(h_r/2.0)):
                     for j in range(x-int(w_r/2.0),x+int(w_r/2.0)):
                         if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
-                            is_line_area=True
+                            # lane line is (0,0,0), others is (255,255,255) 
+                            is_line_area=True 
 
             if not is_line_area:  
                 img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
             else:
+                img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
                 print("ROI is at line label area, skip~~")
                 #input()
             #cv2.imshow("roi_l_tmp",roi_l_tmp)
@@ -276,7 +302,7 @@ def Generate_Landmark_Img(img_path=None,
         cv2.imshow("roi",roi)
         cv2.imshow("roi_mask",roi_mask)
         #按下任意鍵則關閉所有視窗
-        cv2.waitKey(1000)
+        cv2.waitKey(0)
         cv2.destroyAllWindows()
 
 
@@ -347,10 +373,10 @@ def get_args():
 
 if __name__=="__main__":
 
-    img_path = "./datasets/imgs/b4dd1c23-355940ff.jpg"
-    roi_path = "./roi/45.jpg"
-    roi_mask_path = "./mask/45.jpg"
-    label_path = "./datasets/labels/b4dd1c23-355940ff.png"
+    img_path = "./datasets/imgs/b2de6f59-9f74dea1.jpg"
+    roi_path = "./roi/113.jpg"
+    roi_mask_path = "./mask/113.jpg"
+    label_path = "./datasets/labels/b2de6f59-9f74dea1.png"
     line_label_path = "./datasets/line_label/b4dd1c23-355940ff.png"
 
     INFER_ONE_IMG=True
@@ -371,7 +397,7 @@ if __name__=="__main__":
     roi_mask_dir = args.roi_maskdir
     save_landmark_img = True
     generate_number = args.num_img
-    show_img = False
+    show_img = True
 
 
     # img_dir = "/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train"
