@@ -35,6 +35,10 @@ def Generate_Landmark_Img(img_path=None,
     #print("[Generate_Landmark_Img]label_train_path:{}".format(label_train_path))
     
     label_train = cv2.imread(label_train_path) #drivable area label mask for train
+    # for i in range(label_train.shape[0]):
+    #     for j in range(label_train.shape[1]):
+    #         print(label_train[i][j])
+    #label_train = cv2.cvtColor(label_train,cv2.COLOR_BGR2GRAY)
     #cv2.imshow("label_train",label_train)
     #cv2.waitKey(2000)
     #cv2.destroyAllWindows()
@@ -161,7 +165,7 @@ def Generate_Landmark_Img(img_path=None,
         resize_ratio = float(final_roi_w/roi_w)
         print("resize_ratio case 1 ")
     else:
-        final_roi_w = road_width * 0.15
+        final_roi_w = road_width * 0.10
         resize_ratio = float(final_roi_w/roi_w) #if no line, lane width is too large
         print("resize_ratio case 2 ")
 
@@ -191,7 +195,7 @@ def Generate_Landmark_Img(img_path=None,
         USE_OPENCV = False
         print("USE_MASK")
     
-    
+    #USE_OPENCV=True #force using opencv~~~
     if USE_OPENCV:
         if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
             roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
@@ -220,14 +224,21 @@ def Generate_Landmark_Img(img_path=None,
                 #img_roi = img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
                 label_roi = label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
             except:
+
                 IS_FAILED=True
+                print("fail at label_roi = label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]")
+                #input()
                 return IS_FAILED
             
             try:
                 roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20]
                 roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20]
-
-                roi_l_tmp_train[roi_mask>20] = 8
+                 # names_drive:
+                # 0: direct area
+                # 1: alternative area
+                # 2: background
+                # 3: landmark
+                roi_l_tmp_train[roi_mask>20] = 3
                 roi_l_tmp_train[roi_mask<=20] = label_roi[roi_mask<=20]
             except:
                 print("roi_l_tmp_train error~~")
@@ -293,8 +304,12 @@ def Generate_Landmark_Img(img_path=None,
             try:
                 roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20]
                 roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20]
-
-                roi_l_tmp_train[roi_mask>20] = 8
+                # names_drive:
+                # 0: direct area
+                # 1: alternative area
+                # 2: background
+                # 3: landmark
+                roi_l_tmp_train[roi_mask>20] = 3 #0:
                 roi_l_tmp_train[roi_mask<=20] = label_roi[roi_mask<=20]
             except:
                 print("roi_l_tmp_train error~~")
@@ -448,9 +463,9 @@ def get_args():
     parser = argparse.ArgumentParser()
     #'/home/ali/datasets/train_video/NewYork_train/train/images'
     parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/images/100k/train")
-    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/drivable/colormaps/train")
-    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/drivable/masks/train")
-    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/lane/masks/train")
+    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/drivable/colormaps/train")
+    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/drivable/masks/train")
+    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/lane/masks/train")
     parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/roi")
     parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/mask")
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
