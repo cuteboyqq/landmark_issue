@@ -12,7 +12,7 @@ import random
 import glob
 import random
 import logging
-
+import numpy as np
 logger = logging.getLogger('my-logger')
 logger.propagate = False
 
@@ -154,7 +154,7 @@ def Generate_Landmark_Img(img_path=None,
         resize_ratio = float(final_roi_w/roi_w)
         print("resize_ratio case 1 ")
     else:
-        final_roi_w = road_width * 0.10 #Get the final ROI width
+        final_roi_w = road_width * 0.30 #Get the final ROI width
         resize_ratio = float(final_roi_w/roi_w) #if no line, lane width is too large
         print("resize_ratio case 2 ")
 
@@ -265,7 +265,7 @@ def Generate_Landmark_Img(img_path=None,
             else:
                 output1 = img
                 IS_FAILED = True
-                #return IS_FAILED
+                return IS_FAILED
             if show_img:
                 cv2.imshow("output1",output1) #img
             if save_landmark_img and not IS_FAILED:
@@ -274,14 +274,26 @@ def Generate_Landmark_Img(img_path=None,
                 if save_txt:
                     os.makedirs("./runs/predict/label",exist_ok=True)
                     image, img_name = Analysis_path(img_path)
-                    landmark_label = 8
+                    landmark_label = 10
                     x = float(int((final_x/img.shape[1])*1000000)/1000000)
                     y = float(int((y/img.shape[0])*1000000)/1000000)
                     w = float(int((final_roi_w/img.shape[1])*1000000)/1000000)
                     h = float(int((final_roi_h/img.shape[0])*1000000)/1000000)
-                    with open("./runs/predict/label/"+img_name+".txt",'w') as f:
-                        f.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
-                    f.close()
+                    use_bdd100k_dataset = True
+                    if use_bdd100k_dataset:
+                        f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
+                        f2 = open("./runs/predict/label/"+img_name+".txt",'w')
+                        f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
+                        f2.write("\n")
+                        for line in f.readlines():
+                            f2.write(line)
+
+                        f2.close()
+                        f.close()
+                    else:
+                        f2 = open("./runs/predict/label/"+img_name+".txt",'w')
+                        f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
+                        f2.close()
 
                 image, img_name = Analysis_path(img_path)
                 landmark_img = image
@@ -496,7 +508,7 @@ def get_args():
     parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/mask")
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
-    parser.add_argument('-numimg','--num-img',type=int,default=40000,help='number of generate fake landmark images')
+    parser.add_argument('-numimg','--num-img',type=int,default=20000,help='number of generate fake landmark images')
     parser.add_argument('-usemaskonly','--use-mask',type=bool,default=False,help='use mask method to generate landmark or not')
     parser.add_argument('-show','--show',action='store_true',help='show images result')
    
@@ -532,7 +544,7 @@ if __name__=="__main__":
     save_txt = True 
     generate_number = args.num_img
     use_masek = args.use_mask
-    show_img = True
+    show_img = False
 
 
     # img_dir = "/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train"
