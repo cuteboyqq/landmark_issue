@@ -1,4 +1,7 @@
 # landmark_issue
+
+## [2023-08-19] add classify model to classify landmark and others images
+
 ## generate new image with landmark
 ```
 python generate_arrow_img.py
