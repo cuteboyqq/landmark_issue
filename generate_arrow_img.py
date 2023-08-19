@@ -197,9 +197,9 @@ def Generate_Landmark_Img(img_path=None,
             #===================filter landmark location at line area 2023-08-08=====================================================================================
             is_line_area = False
             use_line_label = True
-            
+            x = final_x
             y_uper = y+int(h_r/2.0) if y+int(h_r/2.0) < img.shape[0] else img.shape[0] - 1
-            y_lower = y+int(h_r/2.0) if y-int(h_r/2.0) > 0 else 0
+            y_lower = y-int(h_r/2.0) if y-int(h_r/2.0) > 0 else 0
            
             x_uper = x+int(w_r/2.0) if x+int(w_r/2.0) < img.shape[1] else img.shape[1] - 1
             x_lower = x-int(w_r/2.0) if x-int(w_r/2.0) >= 0 else 0
@@ -208,8 +208,12 @@ def Generate_Landmark_Img(img_path=None,
             if use_line_label:
                 for i in range(y_lower,y_uper):
                     for j in range(x_lower,x_uper):
-                        if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
+                        if line_label[i][j][0]<255 or line_label[i][j][1]<255 or line_label[i][j][2]<255:
                             is_line_area=True
+                            #print("USE_OPENCV is_line_area=True")
+                            #input()
+                            IS_FAILED = True
+                            return IS_FAILED
                         if label_mask[i][j] == 0:
                             out_of_range = True
             #============================================================================================================================
@@ -233,16 +237,16 @@ def Generate_Landmark_Img(img_path=None,
             
             use_mask_method=False #use new method if mask is not beautiful to separate forground and background
             try:
-                roi_l_tmp[roi_mask_l>20] = roi_l[roi_mask_l>20] #put the landmark into image roi
-                roi_l_tmp[roi_mask_l<=20] = img_roi[roi_mask_l<=20] #keep the background in image roi
+                roi_l_tmp[roi_mask_l>10] = roi_l[roi_mask_l>10] #put the landmark into image roi
+                roi_l_tmp[roi_mask_l<=10] = img_roi[roi_mask_l<=10] #keep the background in image roi
                 if use_mask_method:
                     # Use mask to get re-label the label.png, if you have clear roi_mask
-                    roi_l_tmp_train[roi_mask_l>20] = 3 #assign new label landmark=3
-                    roi_l_tmp_train[roi_mask_l<=20] = label_roi[roi_mask_l<=20] #keep the original label of background
+                    roi_l_tmp_train[roi_mask_l>10] = 3 #assign new label landmark=3
+                    roi_l_tmp_train[roi_mask_l<=10] = label_roi[roi_mask_l<=10] #keep the original label of background
                 else: #Non-mask method to generatee new label.png #Result is not good
                     roi_diff = roi_l_tmp - img_roi #find the difference of ori-imge and new-image
-                    roi_tmp_v2[roi_diff>30] = 150 #Test using 150 for view image
-                    roi_tmp_v2[roi_diff<=30] = label_roi[roi_diff<=30]
+                    roi_tmp_v2[roi_diff>10] = 150 #Test using 150 for view image
+                    roi_tmp_v2[roi_diff<=10] = label_roi[roi_diff<=10]
             except:
                 IS_FAILED=True
                 return IS_FAILED
@@ -272,7 +276,7 @@ def Generate_Landmark_Img(img_path=None,
 
                 #Now we have information of ROI coordinate : x,y,w,h , so we can save it into filename.txt of yolo format
                 if save_txt:
-                    os.makedirs("./runs/predict/label",exist_ok=True)
+                    os.makedirs("./fake_landmark_image_test/label",exist_ok=True)
                     image, img_name = Analysis_path(img_path)
                     landmark_label = 10
                     x = float(int((final_x/img.shape[1])*1000000)/1000000)
@@ -281,15 +285,21 @@ def Generate_Landmark_Img(img_path=None,
                     h = float(int((final_roi_h/img.shape[0])*1000000)/1000000)
                     use_bdd100k_dataset = True
                     if use_bdd100k_dataset:
-                        f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
-                        f2 = open("./runs/predict/label/"+img_name+".txt",'w')
-                        f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
-                        f2.write("\n")
-                        for line in f.readlines():
-                            f2.write(line)
+                        try:
+                            f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
+                        
+                            f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
+                            f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
+                            f2.write("\n")
+                            for line in f.readlines():
+                                f2.write(line)
 
-                        f2.close()
-                        f.close()
+                            f2.close()
+                            f.close()
+                        except:
+                            print("Pass saving labels.txt,No bdd100k label.txt~ ")
+                            IS_FAILED=True
+                            return IS_FAILED
                     else:
                         f2 = open("./runs/predict/label/"+img_name+".txt",'w')
                         f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
@@ -303,7 +313,7 @@ def Generate_Landmark_Img(img_path=None,
                 os.makedirs(image_dir,exist_ok=True)
                 os.makedirs(label_dir,exist_ok=True)
                 cv2.imwrite("./fake_landmark_image_test/images/"+landmark_img,output1)
-                cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
+                #cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
                 # landmark_img = image
                 # os.makedirs("./fake_landmark_image_test",exist_ok=True)
                 # cv2.imwrite(os.path.join("./fake_landmark_image_test/",landmark_img),output1)
@@ -336,15 +346,15 @@ def Generate_Landmark_Img(img_path=None,
             print("roi_l_tmp {}".format(roi_l_tmp.shape))
             print("img_roi {}".format(img_roi.shape))
             try:
-                roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20] # put landmark into image
-                roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20] #keep the background pixel in image
+                roi_l_tmp[roi_mask>10] = roi_l[roi_mask>10] # put landmark into image
+                roi_l_tmp[roi_mask<=10] = img_roi[roi_mask<=10] #keep the background pixel in image
                 # names_drive:
                 # 0: direct area
                 # 1: alternative area
                 # 2: background
                 # 3: landmark
-                roi_l_tmp_train[roi_mask>20] = 3 #0:
-                roi_l_tmp_train[roi_mask<=20] = label_roi[roi_mask<=20]
+                roi_l_tmp_train[roi_mask>10] = 3 #0:
+                roi_l_tmp_train[roi_mask<=10] = label_roi[roi_mask<=10]
             except:
                 print("roi_l_tmp_train error~~")
                 #input()
@@ -355,43 +365,25 @@ def Generate_Landmark_Img(img_path=None,
             #filter landmark location at line area 2023-08-08
             is_line_area = False
             use_line_label = True
-            y_uper = y+int(h_r/2.0)
-            y_lower = y-int(h_r/2.0)
-            if y+int(h_r/2.0) < img.shape[0]:
-                y_uper = y+int(h_r/2.0)
-            else:
-                y_uper = img.shape[0] - 1
-
-            if y-int(h_r/2.0) > 0:
-                y_lower = y+int(h_r/2.0)
-            else:
-                y_lower = 0
-
-            x_uper = x+int(w_r/2.0)
-            x_lower = x-int(w_r/2.0)
-            if x+int(w_r/2.0) < img.shape[1]:
-                x_uper = x+int(w_r/2.0)
-            else:
-                x_uper = img.shape[1] - 1
-
-            if x-int(w_r/2.0) >= 0 :
-                x_lower = x-int(w_r/2.0)
-            else:
-                x_lower = 0
-
+            x = final_x
+            y_uper = y+int(h_r/2.0) if y+int(h_r/2.0) < img.shape[0] else img.shape[0] - 1
+            y_lower = y-int(h_r/2.0) if y-int(h_r/2.0) > 0 else 0
+           
+            x_uper = x+int(w_r/2.0) if x+int(w_r/2.0) < img.shape[1] else img.shape[1] - 1
+            x_lower = x-int(w_r/2.0) if x-int(w_r/2.0) >= 0 else 0
+         
             out_of_range = False
             if use_line_label:
-                
                 for i in range(y_lower,y_uper):
                     for j in range(x_lower,x_uper):
-                        if line_label[i][j][0]<255 and line_label[i][j][1]<255 and line_label[i][j][2]<255:
-                            
+                        if line_label[i][j][0]<255 or line_label[i][j][1]<255 or line_label[i][j][2]<255:
                             is_line_area=True
+                            IS_FAILED = True
+                            return IS_FAILED
                         if label_mask[i][j] == 0:
                             out_of_range = True
-        
-
-            if not is_line_area and (h_r*w_r)<70000:
+    
+            if not is_line_area:
                 try:
                     img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
                     label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train #new label for landmark
@@ -408,6 +400,39 @@ def Generate_Landmark_Img(img_path=None,
                 cv2.imshow("img",img) #img
 
             if save_landmark_img and not IS_FAILED:
+
+                #Now we have information of ROI coordinate : x,y,w,h , so we can save it into filename.txt of yolo format
+                if save_txt:
+                    os.makedirs("./fake_landmark_image_test/label",exist_ok=True)
+                    image, img_name = Analysis_path(img_path)
+                    landmark_label = 10
+                    x = float(int((final_x/img.shape[1])*1000000)/1000000)
+                    y = float(int((y/img.shape[0])*1000000)/1000000)
+                    w = float(int((final_roi_w/img.shape[1])*1000000)/1000000)
+                    h = float(int((final_roi_h/img.shape[0])*1000000)/1000000)
+                    use_bdd100k_dataset = True
+                    if use_bdd100k_dataset:
+                        try:
+                            f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
+                        
+                            f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
+                            f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
+                            f2.write("\n")
+                            for line in f.readlines():
+                                f2.write(line)
+
+                            f2.close()
+                            f.close()
+                        except:
+                            print("Pass saving labels.txt,No bdd100k label.txt~ ")
+                            IS_FAILED=True
+                            return IS_FAILED
+                    else:
+                        f2 = open("./runs/predict/label/"+img_name+".txt",'w')
+                        f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
+                        f2.close()
+
+
                 image, img_name = Analysis_path(img_path)
                 landmark_img = image
                 label = img_name + ".png"
@@ -509,7 +534,7 @@ def get_args():
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
     parser.add_argument('-numimg','--num-img',type=int,default=20000,help='number of generate fake landmark images')
-    parser.add_argument('-usemaskonly','--use-mask',type=bool,default=False,help='use mask method to generate landmark or not')
+    parser.add_argument('-usemaskonly','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
     parser.add_argument('-show','--show',action='store_true',help='show images result')
    
     return parser.parse_args()    
