@@ -286,7 +286,7 @@ def Generate_Landmark_Img(img_path=None,
                     use_bdd100k_dataset = True
                     if use_bdd100k_dataset:
                         try:
-                            f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
+                            f = open("/home/ali/datasets/BDD100K/labels/detection/train/"+img_name+".txt",'r')
                         
                             f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
                             f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
@@ -322,8 +322,12 @@ def Generate_Landmark_Img(img_path=None,
     else: #Use Mask method
         if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
             print("case 1 ")
-            roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
-            roi_mask = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+            try:
+                roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+                roi_mask = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+            except:
+                IS_FAILED=True
+                return IS_FAILED
             x = final_x
             h_r = int(h_r*resize_ratio_h)
             print("h_r = {}".format(h_r))
@@ -413,7 +417,7 @@ def Generate_Landmark_Img(img_path=None,
                     use_bdd100k_dataset = True
                     if use_bdd100k_dataset:
                         try:
-                            f = open("/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/detection/train/"+img_name+".txt",'r')
+                            f = open("/home/ali/datasets/BDD100K/labels/detection/train/"+img_name+".txt",'r')
                         
                             f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
                             f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
@@ -441,7 +445,7 @@ def Generate_Landmark_Img(img_path=None,
                 os.makedirs(image_dir,exist_ok=True)
                 os.makedirs(label_dir,exist_ok=True)
                 cv2.imwrite("./fake_landmark_image_test/images/"+landmark_img,img)
-                cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
+                #cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
         else:
             print("at Carhood, pass!")
 
@@ -525,12 +529,12 @@ def get_args():
     
     parser = argparse.ArgumentParser()
     #'/home/ali/datasets/train_video/NewYork_train/train/images'
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/images/100k/train")
-    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/drivable/colormaps/train")
-    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/drivable/masks/train")
-    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data-ori/labels/lane/masks/train")
-    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/roi")
-    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/mask")
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/ali/datasets/BDD100K/images/100k/train")
+    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/ali/datasets/BDD100K/labels/drivable/colormaps/train")
+    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/ali/datasets/BDD100K/labels/drivable/masks/train")
+    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/ali/datasets/BDD100K/labels/lane/masks/train")
+    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/ali/GitHub_Code/cuteboyqq/landmark_issue/roi")
+    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/ali/GitHub_Code/cuteboyqq/landmark_issue/mask")
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
     parser.add_argument('-numimg','--num-img',type=int,default=20000,help='number of generate fake landmark images')
