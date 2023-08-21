@@ -19,8 +19,8 @@ def FilterImg(img_dir,
         img = cv2.imread(img_path)
         h,w = img.shape[0],img.shape[1]
         print("{}:{}".format(c,img_path))
-        if h*w < 80*80:
-            print("too small (<6400 pixels)")
+        if h*w < 60*60:
+            print("too small (<60x60 pixels)")
         else:
             roi_dir = os.path.join(save_dir,"roi")
             shutil.copy(img_path,roi_dir)
@@ -28,7 +28,7 @@ def FilterImg(img_dir,
         
             if mask:
                 img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-                _,img_binary = cv2.threshold(img_gray,127,255,0)
+                _,img_binary = cv2.threshold(img_gray,180,255,0)
                 mask_dir = os.path.join(save_dir,"mask")
                 cv2.imwrite(mask_dir+"/"+file,img_binary)
                 print("{}:Save mask".format(c))
