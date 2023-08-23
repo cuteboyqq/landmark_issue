@@ -142,9 +142,9 @@ python img_process.py
 
 ## result images
 
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a" width="512" height="288">
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059" width="512" height="288">
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/78a8cf19-a172-4039-ade7-35b49e5d9a31" width="512" height="288">
+<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a" width="960" height="540">
+<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059" width="960" height="540">
+<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/78a8cf19-a172-4039-ade7-35b49e5d9a31" width="960" height="540">
 ![0aec42a1-17a32b5a](https://github.com/cuteboyqq/landmark_issue/assets/58428559/a8cf5c3b-a73a-48eb-97ef-091ecf4cc21f)
 ![0b24b165-efec69bb](https://github.com/cuteboyqq/landmark_issue/assets/58428559/2547690a-b80e-4718-bc39-cad6eade791f)
 ![0b71f4fc-d83ed49c](https://github.com/cuteboyqq/landmark_issue/assets/58428559/4a00fd20-d2f6-4d29-b20f-fc40523b0627)
