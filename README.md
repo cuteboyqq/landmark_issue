@@ -8,14 +8,36 @@ python generate_arrow_img.py
 ```
 ### you can set parameter, the detail parameter is below
 ```
-parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train")
-    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/drivable/colormaps/train")
-    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/lane/masks/train")
-    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/roi")
-    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi dir',default="/home/jnr_loganvo/Alister/GitHub_Code/landmark_issue/mask")
-    parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
-    parser.add_argument('-numimg','--num-img',type=int,default=10000,help='number of generate fake landmark images')
-    parser.add_argument('-show','--show',action='store_true',help='show images result')
+usage: generate_arrow_img.py [-h] [-imgdir IMG_DIR] [-drilabeldir DRI_LABELDIR] [-drilabeldirtrain DRI_LABELDIRTRAIN] [-linelabeldir LINE_LABELDIR]
+                             [-roidir ROI_DIR] [-roimaskdir ROI_MASKDIR] [-saveimg] [-savecolormap] [-savetxt] [-numimg NUM_IMG] [-useopencvratio USE_OPENCVRATIO]
+                             [-usemaskonly USE_MASK] [-show]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -imgdir IMG_DIR, --img-dir IMG_DIR
+                        image dir
+  -drilabeldir DRI_LABELDIR, --dri-labeldir DRI_LABELDIR
+                        drivable label dir
+  -drilabeldirtrain DRI_LABELDIRTRAIN, --dri-labeldirtrain DRI_LABELDIRTRAIN
+                        drivable label dir fo train
+  -linelabeldir LINE_LABELDIR, --line-labeldir LINE_LABELDIR
+                        line label dir
+  -roidir ROI_DIR, --roi-dir ROI_DIR
+                        roi dir
+  -roimaskdir ROI_MASKDIR, --roi-maskdir ROI_MASKDIR
+                        roi mask dir
+  -saveimg, --save-img  save landmark fake images
+  -savecolormap, --save-colormap
+                        save generate semantic segment colormaps
+  -savetxt, --save-txt  save landmark fake label.txt in yolo format cxywh
+  -numimg NUM_IMG, --num-img NUM_IMG
+                        number of generate fake landmark images
+  -useopencvratio USE_OPENCVRATIO, --use_opencvratio USE_OPENCVRATIO
+                        ratio of using opencv method to generate landmark images
+  -usemaskonly USE_MASK, --use-mask USE_MASK
+                        use mask method to generate landmark or not
+  -show, --show         show images result
+
 ```
 ## generate landmark ROI
 ### Using bdd100k dataset images, integrate landmark ROI into bdd100k images
