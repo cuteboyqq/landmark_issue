@@ -39,6 +39,32 @@ optional arguments:
   -show, --show         show images result
 
 ```
+for example, using deault setting : 
+```
+def get_args():
+    import argparse
+    
+    parser = argparse.ArgumentParser()
+    #'/home/ali/datasets/train_video/NewYork_train/train/images'
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/ali/Projects/datasets/BDD100K-ori/images/100k/train")
+    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/ali/Projects/datasets/BDD100K-ori/labels/drivable/colormaps/train")
+    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/ali/Projects/datasets/BDD100K-ori/labels/drivable/masks/train")
+    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/ali/Projects/datasets/BDD100K-ori/labels/lane/masks/train")
+    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/ali/Projects/GitHub_Code/ali/landmark_issue/roi")
+    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/ali/Projects/GitHub_Code/ali/landmark_issue/mask")
+    parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
+    parser.add_argument('-savecolormap','--save-colormap',action='store_true',help='save generate semantic segment colormaps')
+    parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
+    parser.add_argument('-numimg','--num-img',type=int,default=40000,help='number of generate fake landmark images')
+    parser.add_argument('-useopencvratio','--use_opencvratio',type=float,default=0.50,help='ratio of using opencv method to generate landmark images')
+    parser.add_argument('-usemaskonly','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
+    parser.add_argument('-show','--show',action='store_true',help='show images result')
+   
+    return parser.parse_args()  
+
+```
+
+
 ## generate landmark ROI
 ### Using bdd100k dataset images, integrate landmark ROI into bdd100k images
 ```
