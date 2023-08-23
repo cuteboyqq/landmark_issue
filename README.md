@@ -22,6 +22,75 @@ parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/jnr_lo
 ```
 python img_process.py
 ```
+### bdd100k dataset directory format
+
+├── images
+│   ├── 100k
+│   │   ├── test
+│   │   ├── train
+│   │   └── val
+│   └── 10k
+│       ├── test
+│       ├── train
+│       └── val
+├── labels
+│   ├── det_20
+│   │   ├── bdd100k_format
+│   │   │   ├── det_train.json
+│   │   │   └── det_val.json
+│   │   ├── train.json
+│   │   └── val.json
+│   ├── detection
+│   │   ├── train
+│   │   └── val
+│   ├── drivable
+│   │   ├── colormaps
+│   │   │   ├── train
+│   │   │   └── val
+│   │   ├── masks
+│   │   │   ├── train
+│   │   │   └── val
+│   │   ├── polygons
+│   │   │   ├── drivable_train.json
+│   │   │   └── drivable_val.json
+│   │   └── rles
+│   │       ├── drivable_train.json
+│   │       └── drivable_val.json
+│   ├── drivable_lane
+│   │   ├── color_masks
+│   │   │   ├── train
+│   │   │   └── val
+│   │   └── masks
+│   │       ├── train
+│   │       └── val
+│   ├── ins_seg
+│   │   ├── bitmasks
+│   │   │   ├── train
+│   │   │   └── val
+│   │   ├── colormaps
+│   │   │   ├── train
+│   │   │   └── val
+│   │   ├── polygons
+│   │   │   ├── ins_seg_train.json
+│   │   │   └── ins_seg_val.json
+│   │   └── rles
+│   │       ├── ins_seg_train.json
+│   │       └── ins_seg_val.json
+│   └── lane
+│       ├── colormaps
+│       │   ├── train
+│       │   └── val
+│       ├── masks
+│       │   ├── train
+│       │   └── val
+│       └── polygons
+│           ├── lane_train.json
+│           └── lane_val.json
+├── train.txt
+└── val.txt
+
+
+
 ## reslut images
 ![0a7b0436-1a46bb12](https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a)
 ![0a14abcb-e1a9d5d9](https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059)
