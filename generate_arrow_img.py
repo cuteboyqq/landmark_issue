@@ -336,9 +336,15 @@ def Generate_Landmark_Img(img_path=None,
         else:
             print("at Carhood, pass!")
     else: #Use Mask method
-        roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
-        roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
-        ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
+        try:
+            roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+            roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
+            ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
+        except:
+            print("roi_mask_l = cv2.resize Error~~~")
+            IS_FAILED=True
+            return IS_FAILED
+        
         if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
             print("case 1 ")
             try:
