@@ -142,7 +142,7 @@ python img_process.py
 
 
 ## reslut images
-![0a7b0436-1a46bb12](https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a)
+![0a7b0436-1a46bb12 | 288x512](https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a)
 ![0a14abcb-e1a9d5d9](https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059)
 ![0aa842d5-a319d2e2](https://github.com/cuteboyqq/landmark_issue/assets/58428559/78a8cf19-a172-4039-ade7-35b49e5d9a31)
 ![0aec42a1-17a32b5a](https://github.com/cuteboyqq/landmark_issue/assets/58428559/a8cf5c3b-a73a-48eb-97ef-091ecf4cc21f)
