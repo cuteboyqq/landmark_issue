@@ -141,30 +141,20 @@ python img_process.py
 
 
 ## result images
-
-![0aec42a1-17a32b5a](https://github.com/cuteboyqq/landmark_issue/assets/58428559/a8cf5c3b-a73a-48eb-97ef-091ecf4cc21f)
-![0b24b165-efec69bb](https://github.com/cuteboyqq/landmark_issue/assets/58428559/2547690a-b80e-4718-bc39-cad6eade791f)
-![0b71f4fc-d83ed49c](https://github.com/cuteboyqq/landmark_issue/assets/58428559/4a00fd20-d2f6-4d29-b20f-fc40523b0627)
+![0ff22e9f-bc99e801](https://github.com/cuteboyqq/landmark_issue/assets/58428559/58bae0d4-6044-4b6c-a2c7-f15798b05319)
 
 
-
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/53e3b84f-99d0-4d1d-97ce-6c5361e1836a" width="960" height="540">
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/8ac83daf-34c6-40d3-8e8c-1e3fc7f0f059" width="960" height="540">
-<img src="https://github.com/cuteboyqq/landmark_issue/assets/58428559/78a8cf19-a172-4039-ade7-35b49e5d9a31" width="960" height="540">
+![01a4933a-252e566a](https://github.com/cuteboyqq/landmark_issue/assets/58428559/fe18bc06-db9a-4c37-a30e-941cacab9839)
 
 
+![0c4d4afa-75fce0c1](https://github.com/cuteboyqq/landmark_issue/assets/58428559/0f571ef5-e9c9-4c64-aeab-dd373f6ff3c0)
 
-![0b6781f6-eeb5fc5f](https://github.com/cuteboyqq/landmark_issue/assets/58428559/e4b4366c-f4e6-41be-ae94-63d66c7cc71b)
-![0bdf6421-0cca8ba2](https://github.com/cuteboyqq/landmark_issue/assets/58428559/08e9eda9-9d2f-4dda-920c-93beb27e504f)
-![0bf28365-020515e2](https://github.com/cuteboyqq/landmark_issue/assets/58428559/4d894ebc-8ec9-401b-9c23-84f85d1bc2a8)
-![0c597dc1-bc5a9586](https://github.com/cuteboyqq/landmark_issue/assets/58428559/ab962776-5ee1-4783-9983-c6ccf9902392)
-![0ca7d4fe-7eaf5269](https://github.com/cuteboyqq/landmark_issue/assets/58428559/ce8402c8-002a-4b6b-aa68-79642598efd7)
 
-![004071a4-4e8a363a](https://github.com/cuteboyqq/landmark_issue/assets/58428559/222c3b86-2058-40a6-8ab6-cce471c49559)
-![4075c629-361acafb](https://github.com/cuteboyqq/landmark_issue/assets/58428559/5360daab-327f-4d7f-b4a4-53ee11742791)
-![4080d966-aceadb52](https://github.com/cuteboyqq/landmark_issue/assets/58428559/843f2ccb-1ea9-49f0-b7f7-fbe5ba90fc12)
-![4097ad84-74b4838c](https://github.com/cuteboyqq/landmark_issue/assets/58428559/bb13d348-6a60-413f-97ee-93de8b78fbf5)
-![4170f5e5-9b11385b](https://github.com/cuteboyqq/landmark_issue/assets/58428559/a33afcb9-4ef3-4d8c-94a2-bf36c452ad42)
-![4178c48e-b9faf25c](https://github.com/cuteboyqq/landmark_issue/assets/58428559/dba901be-ddc9-4a34-9a57-010fbd80f07a)
-![4179b0c0-15e91828](https://github.com/cuteboyqq/landmark_issue/assets/58428559/e3e4477f-1eb3-4c91-80c5-a1aaa12217f2)
-![04200e90-3ca8cd17](https://github.com/cuteboyqq/landmark_issue/assets/58428559/cd551e83-9d6f-453b-9570-0890dfcaa9ee)
+![1f79f230-a15dcf16](https://github.com/cuteboyqq/landmark_issue/assets/58428559/f9ceaadf-ae78-4658-9308-a2feb5e2fe68)
+![1f93fff6-8be58b84](https://github.com/cuteboyqq/landmark_issue/assets/58428559/f39425db-39bb-464a-bade-5d8d5f6f919b)
+![2dc745eb-8c897bb9](https://github.com/cuteboyqq/landmark_issue/assets/58428559/caf2ba36-3422-45c0-a60c-c292f4ec5cfb)
+![2d86b379-c3a6e578](https://github.com/cuteboyqq/landmark_issue/assets/58428559/10c8f1b9-dd69-4106-aab6-0f209238b5e1)
+![02de1e9e-77fd472f](https://github.com/cuteboyqq/landmark_issue/assets/58428559/12196eff-806c-4e92-a006-ea06bee3e815)
+![3a686dcb-bc55c6d1](https://github.com/cuteboyqq/landmark_issue/assets/58428559/5e911c9e-724e-4bc3-a81b-ce079c368e6d)
+![3cea8608-b550c2df](https://github.com/cuteboyqq/landmark_issue/assets/58428559/ba178e9c-a1c0-46e3-aed6-42bcb41a0838)
+![3fdd18b1-451986b4](https://github.com/cuteboyqq/landmark_issue/assets/58428559/75e2ca8e-f50b-4126-b5a1-66ee70212c6a)
