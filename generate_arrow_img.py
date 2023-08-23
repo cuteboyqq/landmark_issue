@@ -28,12 +28,14 @@ def Generate_Landmark_Img(img_path=None,
                           label_train_path=None,
                           line_label_path=None,
                           save_landmark_img=False,
+                          save_colormap=False,
                           save_txt=False,
                           show_img=False,
-                          use_mask=True):
+                          use_mask=True,
+                          use_opencv_ratio=0.25):
     #USE_OPENCV = True #Force using opencv~~~
     IS_FAILED = False
-    label = cv2.imread(label_path) #drivable area label colomap
+    label_colormap = cv2.imread(label_path) #drivable area label colomap
     #print("[Generate_Landmark_Img]label_train_path:{}".format(label_train_path))
     
     label_train = cv2.imread(label_train_path) #drivable area label mask for train
@@ -47,7 +49,7 @@ def Generate_Landmark_Img(img_path=None,
     print("label_train shape :{}".format(label_train.shape))
     #input()
     line_label = cv2.imread(line_label_path)
-    label_gray = cv2.cvtColor(label,cv2.COLOR_BGR2GRAY)
+    label_gray = cv2.cvtColor(label_colormap,cv2.COLOR_BGR2GRAY)
     _, label_mask = cv2.threshold(label_gray, 127, 255, 0)
     #cv2.imshow("label_mask",label_mask)
     #cv2.imshow("label",label)
@@ -112,11 +114,11 @@ def Generate_Landmark_Img(img_path=None,
     left_line_point_x = 0
     search_x = x
     #(r,g,b) = label[y][x]
-    print(label[y][x])
+    print(label_colormap[y][x])
     while(search_x>0):
-        if label[y][search_x][0]== label[y][x][0]:
+        if label_colormap[y][search_x][0]== label_colormap[y][x][0]:
             search_x -=1
-        elif not label[y][search_x][0]== label[y][x][0] :
+        elif not label_colormap[y][search_x][0]== label_colormap[y][x][0] :
             left_line_point_x = search_x
             break
 
@@ -124,12 +126,12 @@ def Generate_Landmark_Img(img_path=None,
     search_x = x
     right_line_point_x = left_line_point_x + 2
     while(search_x<label_mask.shape[1]):
-        if label[y][search_x][0]==label[y][x][0]:
+        if label_colormap[y][search_x][0]==label_colormap[y][x][0]:
             search_x +=1
-        elif not label[y][search_x][0]==label[y][x][0] :
+        elif not label_colormap[y][search_x][0]==label_colormap[y][x][0] :
             right_line_point_x = search_x
             break
-        elif label[y][search_x][0]==label[y][x][0] and search_x==label_mask.shape[1]*5.0/6.0:
+        elif label_colormap[y][search_x][0]==label_colormap[y][x][0] and search_x==label_mask.shape[1]*5.0/6.0:
             right_line_point_x = search_x
 
     print("right_line_point_x:{}".format(right_line_point_x))
@@ -172,15 +174,17 @@ def Generate_Landmark_Img(img_path=None,
     roi_l = np.ones((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     roi_l_tmp = np.zeros((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     roi_diff = np.zeros((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
+    roi_tmp_v1 = np.zeros((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     roi_tmp_v2 = np.zeros((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     roi_l_tmp_train = np.zeros((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     img_roi = np.ones((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
     label_roi = np.ones((int(h_r*resize_ratio_h),int(w_r*resize_ratio), 3), dtype=np.uint8)
 
+    (opencv_ratio_count) = int(use_opencv_ratio * 100) #0.25*100=25
     USE_OPENCV = True
-    method_choose = random.randint(1,2)
-    USE_OPENCV = True if method_choose==1 else False
-   
+    (rand_num) = random.randint(1,100) 
+    USE_OPENCV = True if (rand_num)<=(opencv_ratio_count) else False #(opencv_ratio_count)% using opencv
+    
     if use_mask==False:
         USE_OPENCV=True
 
@@ -229,20 +233,26 @@ def Generate_Landmark_Img(img_path=None,
             try:
                 img_roi = img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
                 label_roi = label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
+                colormap_roi = label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
             except:
                 IS_FAILED=True
                 print("fail at label_roi = label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]")
                 #input()
                 return IS_FAILED
             
-            use_mask_method=False #use new method if mask is not beautiful to separate forground and background
+            use_mask_method=True #use new method if mask is not beautiful to separate forground and background
             try:
-                roi_l_tmp[roi_mask_l>10] = roi_l[roi_mask_l>10] #put the landmark into image roi
-                roi_l_tmp[roi_mask_l<=10] = img_roi[roi_mask_l<=10] #keep the background in image roi
+                roi_l_tmp[roi_mask_l>20] = roi_l[roi_mask_l>20] #put the landmark into image roi
+                roi_l_tmp[roi_mask_l<=20] = img_roi[roi_mask_l<=20] #keep the background in image roi
+
+
                 if use_mask_method:
                     # Use mask to get re-label the label.png, if you have clear roi_mask
-                    roi_l_tmp_train[roi_mask_l>10] = 3 #assign new label landmark=3
-                    roi_l_tmp_train[roi_mask_l<=10] = label_roi[roi_mask_l<=10] #keep the original label of background
+                    roi_l_tmp_train[roi_mask_l>20] = 3 #assign new label landmark=3
+                    roi_l_tmp_train[roi_mask_l<=20] = label_roi[roi_mask_l<=20] #keep the original label of background
+                    #color map
+                    roi_tmp_v1[roi_mask_l>20] =  (255,127,0)#assign new label landmark=3
+                    roi_tmp_v1[roi_mask_l<=20] = colormap_roi[roi_mask_l<=20] #keep the original label of background
                 else: #Non-mask method to generatee new label.png #Result is not good
                     roi_diff = roi_l_tmp - img_roi #find the difference of ori-imge and new-image
                     roi_tmp_v2[roi_diff>10] = 150 #Test using 150 for view image
@@ -261,9 +271,11 @@ def Generate_Landmark_Img(img_path=None,
                     
                     label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train \
                         if use_mask_method else roi_tmp_v2 #new label for landmark
+                    label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 
                 except:
                     output1 = img
                     print("output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE) Failed ")
+                    #input()
                     IS_FAILED = True
                     return IS_FAILED
             else:
@@ -286,7 +298,7 @@ def Generate_Landmark_Img(img_path=None,
                     use_bdd100k_dataset = True
                     if use_bdd100k_dataset:
                         try:
-                            f = open("/home/ali/datasets/BDD100K/labels/detection/train/"+img_name+".txt",'r')
+                            f = open("/home/ali/Projects/datasets/BDD100K-ori/labels/detection/train/"+img_name+".txt",'r')
                         
                             f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
                             f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
@@ -309,17 +321,24 @@ def Generate_Landmark_Img(img_path=None,
                 landmark_img = image
                 label = img_name + ".png"
                 image_dir = os.path.join("./fake_landmark_image_test","images")
-                label_dir = os.path.join("./fake_landmark_image_test","labels")
+                label_dir = os.path.join("./fake_landmark_image_test","masks")
                 os.makedirs(image_dir,exist_ok=True)
                 os.makedirs(label_dir,exist_ok=True)
                 cv2.imwrite("./fake_landmark_image_test/images/"+landmark_img,output1)
-                #cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
+                cv2.imwrite("./fake_landmark_image_test/masks/"+label,label_train)
+                if save_colormap:
+                    colormap_dir = os.path.join("./fake_landmark_image_test","colormaps")
+                    os.makedirs(colormap_dir,exist_ok=True)
+                    cv2.imwrite("./fake_landmark_image_test/colormaps/"+label,label_colormap)
                 # landmark_img = image
                 # os.makedirs("./fake_landmark_image_test",exist_ok=True)
                 # cv2.imwrite(os.path.join("./fake_landmark_image_test/",landmark_img),output1)
         else:
             print("at Carhood, pass!")
     else: #Use Mask method
+        roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+        roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
+        ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
         if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
             print("case 1 ")
             try:
@@ -344,21 +363,25 @@ def Generate_Landmark_Img(img_path=None,
             try:
                 img_roi = img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
                 label_roi = label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
+                colormap_roi = label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
             except:
                 IS_FAILED=True
                 return IS_FAILED
             print("roi_l_tmp {}".format(roi_l_tmp.shape))
             print("img_roi {}".format(img_roi.shape))
             try:
-                roi_l_tmp[roi_mask>10] = roi_l[roi_mask>10] # put landmark into image
-                roi_l_tmp[roi_mask<=10] = img_roi[roi_mask<=10] #keep the background pixel in image
+                roi_l_tmp[roi_mask>20] = roi_l[roi_mask>20] # put landmark into image
+                roi_l_tmp[roi_mask<=20] = img_roi[roi_mask<=20] #keep the background pixel in image
                 # names_drive:
                 # 0: direct area
                 # 1: alternative area
                 # 2: background
                 # 3: landmark
-                roi_l_tmp_train[roi_mask>10] = 3 #0:
-                roi_l_tmp_train[roi_mask<=10] = label_roi[roi_mask<=10]
+                roi_l_tmp_train[roi_mask>20] = 3 #0:
+                roi_l_tmp_train[roi_mask<=20] = label_roi[roi_mask<=20]
+                #color map
+                roi_tmp_v1[roi_mask_l>20] = (255,127,0)#assign new label landmark=3
+                roi_tmp_v1[roi_mask_l<=20] = colormap_roi[roi_mask_l<=20] #keep the original label of background
             except:
                 print("roi_l_tmp_train error~~")
                 #input()
@@ -391,6 +414,7 @@ def Generate_Landmark_Img(img_path=None,
                 try:
                     img[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp
                     label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train #new label for landmark
+                    label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 #new colormap for landmark
                 except:
                     IS_FAILED=True
                     #print("label_train IS_FAILED")
@@ -406,7 +430,7 @@ def Generate_Landmark_Img(img_path=None,
             if save_landmark_img and not IS_FAILED:
 
                 #Now we have information of ROI coordinate : x,y,w,h , so we can save it into filename.txt of yolo format
-                if save_txt:
+                if save_txt: #save yolo label.txt
                     os.makedirs("./fake_landmark_image_test/label",exist_ok=True)
                     image, img_name = Analysis_path(img_path)
                     landmark_label = 10
@@ -417,7 +441,7 @@ def Generate_Landmark_Img(img_path=None,
                     use_bdd100k_dataset = True
                     if use_bdd100k_dataset:
                         try:
-                            f = open("/home/ali/datasets/BDD100K/labels/detection/train/"+img_name+".txt",'r')
+                            f = open("/home/ali/Projects/datasets/BDD100K-ori/labels/detection/train/"+img_name+".txt",'r')
                         
                             f2 = open("./fake_landmark_image_test/label/"+img_name+".txt",'w')
                             f2.write(str(landmark_label)+" "+str(x)+" "+str(y)+" "+str(w)+" "+str(h))
@@ -441,11 +465,16 @@ def Generate_Landmark_Img(img_path=None,
                 landmark_img = image
                 label = img_name + ".png"
                 image_dir = os.path.join("./fake_landmark_image_test","images")
-                label_dir = os.path.join("./fake_landmark_image_test","labels")
+                label_dir = os.path.join("./fake_landmark_image_test","masks")
                 os.makedirs(image_dir,exist_ok=True)
                 os.makedirs(label_dir,exist_ok=True)
                 cv2.imwrite("./fake_landmark_image_test/images/"+landmark_img,img)
-                #cv2.imwrite("./fake_landmark_image_test/labels/"+label,label_train)
+                cv2.imwrite("./fake_landmark_image_test/masks/"+label,label_train)
+                if save_colormap:
+                    colormap_dir = os.path.join("./fake_landmark_image_test","colormaps")
+                    os.makedirs(colormap_dir,exist_ok=True)
+                    cv2.imwrite("./fake_landmark_image_test/colormaps/"+label,label_colormap)
+               
         else:
             print("at Carhood, pass!")
 
@@ -469,10 +498,12 @@ def Generate_landmark_Imgs(img_dir=None,
                            roi_dir=None,
                            roi_mask_dir=None,
                            save_landmark_img=True,
+                           save_colormap=True,
                            save_txt=True,
                            generate_number=None,
                            show_img=False,
-                           use_mask=True):
+                           use_mask=True,
+                           use_opencv_ratio=0.25):
     img_path_list = glob.glob(os.path.join(img_dir,"*.jpg"))
     label_path_list = glob.glob(os.path.join(label_dir,"*.png"))
     label_train_path_list = glob.glob(os.path.join(label_dir_train,"*.png"))
@@ -517,9 +548,12 @@ def Generate_landmark_Imgs(img_dir=None,
                             label_train_path=label_train_path,
                             line_label_path=line_label_path,
                             save_landmark_img=save_landmark_img,
+                            save_colormap=save_colormap,
                             save_txt=save_txt,
                             show_img=show_img,
-                            use_mask=use_mask)
+                            use_mask=use_mask,
+                            use_opencv_ratio=0.25)
+                            
             count+=1
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -529,15 +563,17 @@ def get_args():
     
     parser = argparse.ArgumentParser()
     #'/home/ali/datasets/train_video/NewYork_train/train/images'
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/ali/datasets/BDD100K/images/100k/train")
-    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/ali/datasets/BDD100K/labels/drivable/colormaps/train")
-    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/ali/datasets/BDD100K/labels/drivable/masks/train")
-    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/ali/datasets/BDD100K/labels/lane/masks/train")
-    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/ali/GitHub_Code/cuteboyqq/landmark_issue/roi")
-    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/ali/GitHub_Code/cuteboyqq/landmark_issue/mask")
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default="/home/ali/Projects/datasets/BDD100K-ori/images/100k/train")
+    parser.add_argument('-drilabeldir','--dri-labeldir',help='drivable label dir',default="/home/ali/Projects/datasets/BDD100K-ori/labels/drivable/colormaps/train")
+    parser.add_argument('-drilabeldirtrain','--dri-labeldirtrain',help='drivable label dir fo train',default="/home/ali/Projects/datasets/BDD100K-ori/labels/drivable/masks/train")
+    parser.add_argument('-linelabeldir','--line-labeldir',help='line label dir',default="/home/ali/Projects/datasets/BDD100K-ori/labels/lane/masks/train")
+    parser.add_argument('-roidir','--roi-dir',help='roi dir',default="/home/ali/Projects/GitHub_Code/ali/landmark_issue/roi")
+    parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/ali/Projects/GitHub_Code/ali/landmark_issue/mask")
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
+    parser.add_argument('-savecolormap','--save-colormap',action='store_true',help='save generate semantic segment colormaps')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
-    parser.add_argument('-numimg','--num-img',type=int,default=20000,help='number of generate fake landmark images')
+    parser.add_argument('-numimg','--num-img',type=int,default=40000,help='number of generate fake landmark images')
+    parser.add_argument('-useopencvratio','--use_opencvratio',type=float,default=0.50,help='ratio of using opencv method to generate landmark images')
     parser.add_argument('-usemaskonly','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
     parser.add_argument('-show','--show',action='store_true',help='show images result')
    
@@ -570,11 +606,12 @@ if __name__=="__main__":
     roi_dir = args.roi_dir
     roi_mask_dir = args.roi_maskdir
     save_landmark_img = True
-    save_txt = True 
+    save_txt = True #args.save_txt
     generate_number = args.num_img
-    use_masek = args.use_mask
+    use_mask = args.use_mask
     show_img = False
-
+    save_colormap = True #args.save_colormap
+    use_opencv_ratio = args.use_opencvratio
 
     # img_dir = "/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train"
     # label_dir = "/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/labels/drivable/colormaps/train"
@@ -593,7 +630,9 @@ if __name__=="__main__":
                             roi_dir,
                             roi_mask_dir,
                             save_landmark_img,
+                            save_colormap,
                             save_txt,
                             generate_number,
                             show_img,
-                            use_masek)
+                            use_mask,
+                            use_opencv_ratio)

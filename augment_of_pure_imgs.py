@@ -23,7 +23,7 @@ def Analysis_Img_Path(img_path):
 
     
 
-def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=True, num=10):
+def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=False, num=10):
     print("aug_hsv not implemented")
     r = np.random.uniform(-1,1,3) * [hgain, sgain, vgain] + 1 #random gains
     
@@ -61,7 +61,14 @@ def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=T
         result_he_img = cv2.cvtColor(img_hsv, cv2.COLOR_HSV2BGR) #no return needed
         
         
+        '''===================================save image====================================='''
         
+        save_img_file = img_name + '_' + str(i) + '.jpg'
+        save_img_file_path = os.path.join(save_dir,save_img_file)
+        
+        if (i) > (num/5) and i!=(num): 
+            cv2.imwrite(save_img_file_path,result_img)
+        '''===================================save image====================================='''
         
     #Histogram equalization
         if do_he==True:
@@ -73,14 +80,7 @@ def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=T
                 result_he_img = result_img
             
             hsv_he_images.append(result_he_img)
-        '''===================================save image====================================='''
-        
-        save_img_file = img_name + '_' + str(i) + '.jpg'
-        save_img_file_path = os.path.join(save_dir,save_img_file)
-        
-        if (i) > (num*3/5) and i!=(num) and (i) < (num*3/2): 
-            cv2.imwrite(save_img_file_path,result_img)
-        '''===================================save image====================================='''
+    
     return hsv_images,hsv_he_images
 
 
@@ -173,19 +173,19 @@ def get_args():
     parser = argparse.ArgumentParser()
     
     '''============================input img/output img parameters setting================================='''
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/GitHub_Code/cuteboyqq/landmark_issue/datasets/landmark_roi_filtered')
-    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/GitHub_Code/cuteboyqq/landmark_issue/landmark_roi_filtered')
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/taiwan_roi_backup')
+    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/taiwan_roi_backup_aug')
     
     '''===================blur parameter settings=========================================================='''
     parser.add_argument('-blur','--blur',help='enable blur augment',action='store_true')
     parser.add_argument('-blurtype','--blur-type',help='blur type : 0:original; 1:mean; 2:Gaussian; 3:median; 4:bilateral',default=2)
-    parser.add_argument('-blursize','--blur-size',help='blur size',default=11)
+    parser.add_argument('-blursize','--blur-size',help='blur size',default=7)
     '''===================flip parameter settings=========================================================='''
     parser.add_argument('-flip','--flip',help='enable flip augment',action='store_true')
     parser.add_argument('-fliptype','--flip-type',help='flip type: 0:lrud, 1:lr, 2:ud' ,default=1)
     '''===================hsv parameter settings=========================================================='''
     parser.add_argument('-hsv','--hsv',help='enable hsv augment',action='store_true')
-    parser.add_argument('-numv','--numv',help='num of v' ,default=3)
+    parser.add_argument('-numv','--numv',help='num of v' ,default=2)
     
     return parser.parse_args()
 

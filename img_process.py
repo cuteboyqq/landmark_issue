@@ -54,14 +54,14 @@ def get_args():
     parser = argparse.ArgumentParser()
     #'/home/ali/datasets/train_video/NewYork_train/train/images'
     parser.add_argument('-datatest','--data-test',help='custom test data)',\
-        default=r'/home/ali/GitHub_Code/cuteboyqq/landmark_issue')
+        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue')
     parser.add_argument('-imgdir','--img-dir',help='image directory that you want to processing)',\
-        default=r'/home/ali/GitHub_Code/cuteboyqq/landmark_issue/datasets/landmark_img')
+        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_img')
     parser.add_argument('-imgsize','--img-size',type=int,help='image size',default=64)
     parser.add_argument('-nc','--nc',type=int,help='num of channels',default=3)
     parser.add_argument('-model','--model',help='resnet,VGG16,repvgg,res2net',default='resnet')
     parser.add_argument('-mpath','--model-path',help='pretrained model path',\
-        default=r'/home/ali/GitHub_Code/cuteboyqq/landmark_issue/runs/train/resnet_best.pt')
+        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue/runs/train/resnet_best.pt')
     parser.add_argument('-viewimg','--view-img',type=bool,help='view process result images',default=False)
     parser.add_argument('-saveroi','--save-roi',type=bool,help='save landmark roi images',default=True)
     parser.add_argument('-savemask','--save-mask',type=bool,help='save landmark mask images',default=True)

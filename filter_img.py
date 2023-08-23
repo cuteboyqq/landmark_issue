@@ -19,8 +19,8 @@ def FilterImg(img_dir,
         img = cv2.imread(img_path)
         h,w = img.shape[0],img.shape[1]
         print("{}:{}".format(c,img_path))
-        if h*w < 60*60:
-            print("too small (<60x60 pixels)")
+        if h*w < 40*40:
+            print("too small (<40*40 pixels)")
         else:
             roi_dir = os.path.join(save_dir,"roi")
             shutil.copy(img_path,roi_dir)
