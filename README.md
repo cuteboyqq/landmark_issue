@@ -24,70 +24,7 @@ python img_process.py
 ```
 ### bdd100k dataset directory format
 
-├── images
-│   ├── 100k
-│   │   ├── test
-│   │   ├── train
-│   │   └── val
-│   └── 10k
-│       ├── test
-│       ├── train
-│       └── val
-├── labels
-│   ├── det_20
-│   │   ├── bdd100k_format
-│   │   │   ├── det_train.json
-│   │   │   └── det_val.json
-│   │   ├── train.json
-│   │   └── val.json
-│   ├── detection
-│   │   ├── train
-│   │   └── val
-│   ├── drivable
-│   │   ├── colormaps
-│   │   │   ├── train
-│   │   │   └── val
-│   │   ├── masks
-│   │   │   ├── train
-│   │   │   └── val
-│   │   ├── polygons
-│   │   │   ├── drivable_train.json
-│   │   │   └── drivable_val.json
-│   │   └── rles
-│   │       ├── drivable_train.json
-│   │       └── drivable_val.json
-│   ├── drivable_lane
-│   │   ├── color_masks
-│   │   │   ├── train
-│   │   │   └── val
-│   │   └── masks
-│   │       ├── train
-│   │       └── val
-│   ├── ins_seg
-│   │   ├── bitmasks
-│   │   │   ├── train
-│   │   │   └── val
-│   │   ├── colormaps
-│   │   │   ├── train
-│   │   │   └── val
-│   │   ├── polygons
-│   │   │   ├── ins_seg_train.json
-│   │   │   └── ins_seg_val.json
-│   │   └── rles
-│   │       ├── ins_seg_train.json
-│   │       └── ins_seg_val.json
-│   └── lane
-│       ├── colormaps
-│       │   ├── train
-│       │   └── val
-│       ├── masks
-│       │   ├── train
-│       │   └── val
-│       └── polygons
-│           ├── lane_train.json
-│           └── lane_val.json
-├── train.txt
-└── val.txt
+![Screenshot from 2023-08-23 12-58-39](https://github.com/cuteboyqq/landmark_issue/assets/58428559/902318f5-8cff-4411-b1b0-038d42c053cb)
 
 
 
