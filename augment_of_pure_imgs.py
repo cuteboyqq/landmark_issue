@@ -168,12 +168,18 @@ def augment_resize(img_path, save_img_dir, resize_width_ratio, resize_height_rat
     print("mask_path:{}".format(mask_path))
 
     mask = cv2.imread(mask_path)
+    save_resize_img = False
     #cv2.imshow("mask",mask)
     #cv2.waitKey(0)
-    if img_h>50 and img_w>50 and ori_label_name=="roi": #filter too small images
-        random_ratio_h = random.randint(0,int(resize_height_ratio*100)) / 100.0
-        random_ratio_w = random.randint(0,int(resize_width_ratio*100)) / 100.0
+    h_min = int(resize_height_ratio*100) - 20 if int(resize_height_ratio*100) - 20 > 0 else 0
+    w_min = int(resize_width_ratio*100) - 20 if int(resize_height_ratio*100) - 20 > 0 else 0
+    random_ratio_h = random.randint(h_min,int(resize_height_ratio*100)) / 100.0
+    random_ratio_w = random.randint(w_min,int(resize_width_ratio*100)) / 100.0
 
+    SIZE_W_TH = 100
+    SIZE_H_TH = 100
+    if img_h>SIZE_H_TH and img_w>SIZE_W_TH and ori_label_name=="roi": #filter too small images
+        
         random_num = random.randint(1,4)
         if random_num==1:
             img_resize = cv2.resize(img,(int(img_w*(1-random_ratio_w)),int(img_h*(1-(random_ratio_h/2.0)))),interpolation=cv2.INTER_NEAREST)
@@ -188,65 +194,22 @@ def augment_resize(img_path, save_img_dir, resize_width_ratio, resize_height_rat
             img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1+random_ratio_h))),interpolation=cv2.INTER_NEAREST)
             mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1+random_ratio_h))),interpolation=cv2.INTER_NEAREST)
 
+        save_resize_img = True
         
-        new_folder_name = ori_label_name
-        save_img_dir_ori = save_img_dir + '_resize'
 
-        save_img_dir = os.path.join(save_img_dir_ori,new_folder_name)
-        os.makedirs(save_img_dir,exist_ok=True)
-
-        save_img_file = img_name + '_resize.jpg' 
-        save_img_file_path = os.path.join(save_img_dir,save_img_file)
-
-        cv2.imwrite(save_img_file_path,img_resize)
-
-        new_folder_mask_name = "mask"
-        save_mask_dir = os.path.join(save_img_dir_ori,new_folder_mask_name)
-        #print("save_mask_dir:{}".format(save_mask_dir))
-        os.makedirs(save_mask_dir,exist_ok=True)
-
-        save_mask_file = img_name + '_resize.jpg'
-        save_mask_file_path = os.path.join(save_mask_dir,save_mask_file)
-        #print("save_mask_file_path:{}".format(save_mask_file_path))
-        #input()
-        cv2.imwrite(save_mask_file_path,mask_resize)
-
-    elif img_h<50 and img_w>50 and ori_label_name=="roi":
-
-        random_ratio_h = random.randint(0,int(resize_height_ratio*100)) / 100.0
-        random_ratio_w = random.randint(0,int(resize_width_ratio*100)) / 100.0
+    elif img_h<SIZE_H_TH and img_w>SIZE_W_TH and ori_label_name=="roi":
 
         random_num = random.randint(1,2)
         if random_num==1:
-            img_resize = cv2.resize(img,(int(img_w*(1-random_ratio_w)),int(img_h*(1+(random_ratio_h/2.0)))),interpolation=cv2.INTER_NEAREST)
-            mask_resize = cv2.resize(mask,(int(img_w*(1-random_ratio_w)),int(img_h*(1+(random_ratio_h/2.0)))),interpolation=cv2.INTER_NEAREST)
+            img_resize = cv2.resize(img,(int(img_w*(1-random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
+            mask_resize = cv2.resize(mask,(int(img_w*(1-random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
         elif random_num==2:
             img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1+random_ratio_h))),interpolation=cv2.INTER_NEAREST)
             mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1+random_ratio_h))),interpolation=cv2.INTER_NEAREST)
      
-        new_folder_name = ori_label_name
-        save_img_dir_ori = save_img_dir + '_resize'
+        save_resize_img=True
 
-        save_img_dir = os.path.join(save_img_dir_ori,new_folder_name)
-        os.makedirs(save_img_dir,exist_ok=True)
-
-        save_img_file = img_name + '_resize.jpg' 
-        save_img_file_path = os.path.join(save_img_dir,save_img_file)
-
-        cv2.imwrite(save_img_file_path,img_resize)
-
-        new_folder_mask_name = "mask"
-        save_mask_dir = os.path.join(save_img_dir_ori,new_folder_mask_name)
-        #print("save_mask_dir:{}".format(save_mask_dir))
-        os.makedirs(save_mask_dir,exist_ok=True)
-
-        save_mask_file = img_name + '_resize.jpg'
-        save_mask_file_path = os.path.join(save_mask_dir,save_mask_file)
-        #print("save_mask_file_path:{}".format(save_mask_file_path))
-        #input()
-        cv2.imwrite(save_mask_file_path,mask_resize)
-
-    elif img_h>50 and img_w<50 and ori_label_name=="roi":
+    elif img_h>SIZE_H_TH and img_w<SIZE_W_TH and ori_label_name=="roi":
         # ---------
         # |       |
         # |       |
@@ -255,18 +218,25 @@ def augment_resize(img_path, save_img_dir, resize_width_ratio, resize_height_rat
         # |       |
         # |       |
         # --------- 
-
-        random_ratio_h = random.randint(0,int(resize_height_ratio*100)) / 100.0
-        random_ratio_w = random.randint(0,int(resize_width_ratio*100)) / 100.0
-
         random_num = random.randint(1,2)
         if random_num==1:
-            img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/2.0)))),interpolation=cv2.INTER_NEAREST)
-            mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/2.0)))),interpolation=cv2.INTER_NEAREST)
+            img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
+            mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
         elif random_num==2:
-            img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1-random_ratio_h))),interpolation=cv2.INTER_NEAREST)
-            mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1-random_ratio_h))),interpolation=cv2.INTER_NEAREST)
+            img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1-random_ratio_h/2.0))),interpolation=cv2.INTER_NEAREST)
+            mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1-random_ratio_h/2.0))),interpolation=cv2.INTER_NEAREST)
      
+        save_resize_img = True
+
+    elif img_h<SIZE_H_TH and img_w<SIZE_W_TH and ori_label_name=="roi":
+        img_resize = cv2.resize(img,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
+        mask_resize = cv2.resize(mask,(int(img_w*(1+random_ratio_w)),int(img_h*(1+(random_ratio_h/1.0)))),interpolation=cv2.INTER_NEAREST)
+        save_resize_img = True
+    else:
+        print("img w or h is smaller than 50 pixels or not roi image, so do not resize ~~~")
+        save_resize_img = False
+    
+    if save_resize_img:
         new_folder_name = ori_label_name
         save_img_dir_ori = save_img_dir + '_resize'
 
@@ -288,8 +258,6 @@ def augment_resize(img_path, save_img_dir, resize_width_ratio, resize_height_rat
         #print("save_mask_file_path:{}".format(save_mask_file_path))
         #input()
         cv2.imwrite(save_mask_file_path,mask_resize)
-    else:
-        print("img w or h is smaller than 50 pixels or not roi image, so do not resize ~~~")
 
 def pure_img_augmentation(do_blur,blur_type,blur_size,
                           do_flip,flip_type,
@@ -326,8 +294,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     
     '''============================input img/output img parameters setting================================='''
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/backup_roi_mask_4')
-    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/backup_roi_mask_4_aug')
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/la')
+    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/la_aug')
     
     '''===================blur parameter settings=========================================================='''
     parser.add_argument('-blur','--blur',help='enable blur augment',action='store_true')
@@ -342,7 +310,7 @@ def get_args():
     '''===================resize parameter settings========================================================='''
     parser.add_argument('-resize','--resize',help='enable resize augment',action='store_true')
     parser.add_argument('-resize_w','--resize_w',help='random shorter/larger num of pixel in width ratio' ,default=0.40)
-    parser.add_argument('-resize_h','--resize_h',help='random shorter/larger num of pixel in height ratio' ,default=0.40)
+    parser.add_argument('-resize_h','--resize_h',help='random shorter/larger num of pixel in height ratio' ,default=0.90)
     
     return parser.parse_args()
 
