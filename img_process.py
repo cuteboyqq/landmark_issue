@@ -112,6 +112,7 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
     edge = cv2.Canny(blurred, t_lower, t_upper, L2gradient = L2Gradient ) #Get Canny image
 
     imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
+
     ret, thresh = cv2.threshold(imgray, 180, 255, 0) #imput Gray image, output Binary images (Mask)
 
     kernel = np.ones((3, 3), np.uint8)

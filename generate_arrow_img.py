@@ -16,6 +16,14 @@ import numpy as np
 logger = logging.getLogger('my-logger')
 logger.propagate = False
 
+def gammaCorrection(src, gamma):
+    invGamma = 1 / gamma
+
+    table = [((i / 255) ** invGamma) * 255 for i in range(256)]
+    table = np.array(table, np.uint8)
+
+    return cv2.LUT(src, table)
+
 def Analysis_path(img_path):
     img = img_path.split("/")[-1]
     img_name = img.split(".")[0]
@@ -29,6 +37,7 @@ def Generate_Landmark_Img(img_path=None,
                           line_label_path=None,
                           save_landmark_img=False,
                           save_colormap=False,
+                          save_mask=False,
                           save_txt=False,
                           show_img=False,
                           use_mask=True,
@@ -190,11 +199,16 @@ def Generate_Landmark_Img(img_path=None,
 
     if USE_OPENCV:
         if y> (vanish_y)+ abs(carhood_y-vanish_y)/10.0 and y<carhood_y-1:
-            roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
-            roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
-            roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
-            ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
-            contours, hierarchy = cv2.findContours(roi_mask_l, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            try:
+                roi_l = cv2.resize(roi,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+                roi_mask_l = cv2.resize(roi_mask,(int(w_r*resize_ratio),int(h_r*resize_ratio_h)),interpolation=cv2.INTER_NEAREST)
+                roi_mask_l = cv2.cvtColor(roi_mask_l, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
+                ret, roi_mask_l = cv2.threshold(roi_mask_l, 150, 255, 0) #imput Gray image, output Binary images (Mask)
+                contours, hierarchy = cv2.findContours(roi_mask_l, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            except:
+                print("roi_l = cv2.resize Error !")
+                IS_FAILED=True
+                return IS_FAILED
             #contours_poly = [None]*len(contours)
             # for i, c in enumerate(contours):
             #     contours_poly[i] = cv2.approxPolyDP(c,3, True)#3
@@ -264,20 +278,58 @@ def Generate_Landmark_Img(img_path=None,
             #Use try-except to ignore errors : 
             # https://stackoverflow.com/questions/38707513/ignoring-an-error-message-to-continue-with-the-loop-in-python
             if not is_line_area:
-                try:
-                    mask = 255 * np.ones(roi_l.shape, roi_l.dtype)
-                    center = (final_x,y)
-                    output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE)
-                    
-                    label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train \
-                        if use_mask_method else roi_tmp_v2 #new label for landmark
-                    label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 
-                except:
-                    output1 = img
-                    print("output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE) Failed ")
-                    #input()
-                    IS_FAILED = True
-                    return IS_FAILED
+                #try:
+                # img_tmp = np.zeros((img.shape[0],img.shape[1], 3), dtype=np.uint8)
+                # img_tmp[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]=roi_l
+                # # cv2.imshow("roi_img",img_tmp)
+                # # cv2.waitKey(0)
+                # cv2.addWeighted(img, 1.0, img_tmp, 0.8, 10)
+                #=========================================================
+                #original = roi_l.copy()
+                # xp = [0, 64, 128, 192, 255]
+                # fp = [0, 16, 128, 240, 255]
+                # x = np.arange(256)
+                # table = np.interp(x, xp, fp).astype('uint8')
+                # roi_l = cv2.LUT(roi_l, table)
+                #==========================================================
+                #roi_l = gammaCorrection(roi_l, 1.4)
+
+                # # normalize float versions
+                # norm_roi_l = cv2.normalize(roi_l, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+                # # scale to uint8
+                # norm_roi_l = (255*norm_roi_l).astype(np.uint8)
+                #cv2.imshow("new_roi",roi_l)
+                #cv2.waitKey(1500)
+
+                # output1 = img
+                mask = 255 * np.ones(roi_l.shape, roi_l.dtype)
+                center = (final_x,y)
+                
+                #for i in range(100):
+                output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE)
+                                              
+
+                #roi_target = output1[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
+                #roi_target = gammaCorrection(roi_target, 1.4)
+                # roi_target[:, :, 0] = cv2.equalizeHist(roi_target[:, :, 0])
+                # roi_target[:, :, 1] = cv2.equalizeHist(roi_target[:, :, 1])
+                # roi_target[:, :, 2] = cv2.equalizeHist(roi_target[:, :, 2])
+
+                # roi_x = x-int(w_r/2.0)
+                # roi_y = y-int(h_r/2.0)
+                # roi_w = w_r
+                # roi_h = h_r
+
+
+                label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train \
+                    if use_mask_method else roi_tmp_v2 #new label for landmark
+                label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 
+                # except:
+                #     output1 = img
+                #     print("output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE) Failed ")
+                #     #input()
+                #     IS_FAILED = True
+                #     return IS_FAILED
             else:
                 output1 = img
                 IS_FAILED = True
@@ -321,11 +373,14 @@ def Generate_Landmark_Img(img_path=None,
                 landmark_img = image
                 label = img_name + ".png"
                 image_dir = os.path.join("./fake_landmark_image_test","images")
-                label_dir = os.path.join("./fake_landmark_image_test","masks")
+                
                 os.makedirs(image_dir,exist_ok=True)
-                os.makedirs(label_dir,exist_ok=True)
+                
                 cv2.imwrite("./fake_landmark_image_test/images/"+landmark_img,output1)
-                cv2.imwrite("./fake_landmark_image_test/masks/"+label,label_train)
+                if save_mask:
+                    label_dir = os.path.join("./fake_landmark_image_test","masks")
+                    os.makedirs(label_dir,exist_ok=True)
+                    cv2.imwrite("./fake_landmark_image_test/masks/"+label,label_train)
                 if save_colormap:
                     colormap_dir = os.path.join("./fake_landmark_image_test","colormaps")
                     os.makedirs(colormap_dir,exist_ok=True)
@@ -505,6 +560,7 @@ def Generate_landmark_Imgs(img_dir=None,
                            roi_mask_dir=None,
                            save_landmark_img=True,
                            save_colormap=True,
+                           save_mask=True,
                            save_txt=True,
                            generate_number=None,
                            show_img=False,
@@ -555,6 +611,7 @@ def Generate_landmark_Imgs(img_dir=None,
                             line_label_path=line_label_path,
                             save_landmark_img=save_landmark_img,
                             save_colormap=save_colormap,
+                            save_mask=save_mask,
                             save_txt=save_txt,
                             show_img=show_img,
                             use_mask=use_mask,
@@ -577,10 +634,11 @@ def get_args():
     parser.add_argument('-roimaskdir','--roi-maskdir',help='roi mask dir',default="/home/ali/Projects/GitHub_Code/ali/landmark_issue/mask")
     parser.add_argument('-saveimg','--save-img',action='store_true',help='save landmark fake images')
     parser.add_argument('-savecolormap','--save-colormap',action='store_true',help='save generate semantic segment colormaps')
+    parser.add_argument('-savemask','--save-mask',action='store_true',help='save generate semantic segment train masks')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
     parser.add_argument('-numimg','--num-img',type=int,default=40000,help='number of generate fake landmark images')
     parser.add_argument('-useopencvratio','--use_opencvratio',type=float,default=0.50,help='ratio of using opencv method to generate landmark images')
-    parser.add_argument('-usemaskonly','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
+    parser.add_argument('-usemask','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
     parser.add_argument('-show','--show',action='store_true',help='show images result')
    
     return parser.parse_args()    
@@ -617,6 +675,7 @@ if __name__=="__main__":
     use_mask = args.use_mask
     show_img = False
     save_colormap = True #args.save_colormap
+    save_mask = True #args.save_mask
     use_opencv_ratio = args.use_opencvratio
 
     # img_dir = "/home/jnr_loganvo/Alister/datasets/YOLO_ADAS/bdd100k_data/images/100k/train"
@@ -637,6 +696,7 @@ if __name__=="__main__":
                             roi_mask_dir,
                             save_landmark_img,
                             save_colormap,
+                            save_mask,
                             save_txt,
                             generate_number,
                             show_img,

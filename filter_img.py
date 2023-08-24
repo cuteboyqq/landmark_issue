@@ -7,6 +7,8 @@ def Parse_Path(path):
     file_name = file.split(".")[0]
     return file,file_name
 
+import numpy as np
+
 def FilterImg(img_dir,
               save_dir,
               mask=True):
@@ -22,16 +24,48 @@ def FilterImg(img_dir,
         if h*w < 40*40:
             print("too small (<40*40 pixels)")
         else:
-            roi_dir = os.path.join(save_dir,"roi")
-            shutil.copy(img_path,roi_dir)
-            print("save img")
+            #roi_dir = os.path.join(save_dir,"roi")
+            #shutil.copy(img_path,roi_dir)
+            #print("save img")
         
             if mask:
                 img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-                _,img_binary = cv2.threshold(img_gray,180,255,0)
+                ## Get the mean value of gray image
+                img_gray_mean = img_gray.mean()
+                print(img_gray_mean)
+                #var = ((img_gray - img_gray_mean) ** 2).mean()
+                #std_rgb = np.sqrt(var)
+                _,img_binary = cv2.threshold(img_gray,img_gray_mean+10,255,0)
                 mask_dir = os.path.join(save_dir,"mask")
                 cv2.imwrite(mask_dir+"/"+file,img_binary)
                 print("{}:Save mask".format(c))
+                equalize=True
+                if equalize:
+                    if img_gray_mean/1.0 +50 <=255:
+                        img_tmp = int(img_gray_mean/1.0 + 50) * np.ones((int(img.shape[0]),int(img.shape[1]), 3), dtype=np.uint8)
+                    else:
+                        img_tmp = int(img_gray_mean/2.0 + 50) * np.ones((int(img.shape[0]),int(img.shape[1]), 3), dtype=np.uint8)
+                    
+                    ##lighter the landmark roi foreground
+                    if img[img_binary>20].mean() < 100:
+                        value = int(255 - img[img_binary>20].mean())/2.0
+                    elif img[img_binary>20].mean() >=  100 and img[img_binary>20].mean() <=  180:
+                        value = int(255 - img[img_binary>20].mean())/2.5
+                    else:
+                        value = 0
+
+                    ##darker the landmark roi background
+                    if img[img_binary<=20].mean() > 127:
+                        value_bg = int(img[img_binary<=20].mean())/2.0
+                    else:
+                        value_bg = 10
+
+                    ##lighter/darker the landmark roi foreground/background
+                    img[img_binary>20] = img[img_binary>20] + (value,value,value)
+                    img[img_binary<=20] = img[img_binary<=20] - (value_bg,value_bg,value_bg)    
+                    roi_dir = os.path.join(save_dir,"roi")
+                    cv2.imwrite(roi_dir+"/"+file,img)
+                    print("save new img")
                 #=====================================================================================
                 #Because it is already the ROI image, so l do not need use contour method to get ROI
                 #======================================================================================
@@ -62,7 +96,7 @@ def FilterImg(img_dir,
 
 if __name__=="__main__":
     img_dir = "./datasets/landmark_roi"
-    save_dir = "./datasets/landmark_roi_filtered"
+    save_dir = "./datasets/landmark_roi_filtered_new"
     FilterImg(img_dir,
               save_dir, 
               mask=True)

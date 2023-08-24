@@ -173,8 +173,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     
     '''============================input img/output img parameters setting================================='''
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/taiwan_roi_backup')
-    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/taiwan_roi_backup_aug')
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_roi_filtered_new')
+    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_roi_filtered_new_aug')
     
     '''===================blur parameter settings=========================================================='''
     parser.add_argument('-blur','--blur',help='enable blur augment',action='store_true')
@@ -219,12 +219,12 @@ if __name__=="__main__":
     #flip_type = 1
     #img_dir = "C:/TLR/datasets/roi-original"
     #save_img_dir = "C:/TLR/datasets"
-    pure_img_augmentation(True,#do blur
+    pure_img_augmentation(False,#do blur
                           blur_type,
                           blur_size,
                           True, #do flip
                           flip_type,
-                          True, #do hsv
+                          False, #do hsv
                           numv,
                               img_dir,
                               save_img_dir
