@@ -278,58 +278,21 @@ def Generate_Landmark_Img(img_path=None,
             #Use try-except to ignore errors : 
             # https://stackoverflow.com/questions/38707513/ignoring-an-error-message-to-continue-with-the-loop-in-python
             if not is_line_area:
-                #try:
-                # img_tmp = np.zeros((img.shape[0],img.shape[1], 3), dtype=np.uint8)
-                # img_tmp[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]=roi_l
-                # # cv2.imshow("roi_img",img_tmp)
-                # # cv2.waitKey(0)
-                # cv2.addWeighted(img, 1.0, img_tmp, 0.8, 10)
-                #=========================================================
-                #original = roi_l.copy()
-                # xp = [0, 64, 128, 192, 255]
-                # fp = [0, 16, 128, 240, 255]
-                # x = np.arange(256)
-                # table = np.interp(x, xp, fp).astype('uint8')
-                # roi_l = cv2.LUT(roi_l, table)
-                #==========================================================
-                #roi_l = gammaCorrection(roi_l, 1.4)
-
-                # # normalize float versions
-                # norm_roi_l = cv2.normalize(roi_l, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-                # # scale to uint8
-                # norm_roi_l = (255*norm_roi_l).astype(np.uint8)
-                #cv2.imshow("new_roi",roi_l)
-                #cv2.waitKey(1500)
-
-                # output1 = img
-                mask = 255 * np.ones(roi_l.shape, roi_l.dtype)
-                center = (final_x,y)
-                
-                #for i in range(100):
-                output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE)
-                                              
-
-                #roi_target = output1[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add]
-                #roi_target = gammaCorrection(roi_target, 1.4)
-                # roi_target[:, :, 0] = cv2.equalizeHist(roi_target[:, :, 0])
-                # roi_target[:, :, 1] = cv2.equalizeHist(roi_target[:, :, 1])
-                # roi_target[:, :, 2] = cv2.equalizeHist(roi_target[:, :, 2])
-
-                # roi_x = x-int(w_r/2.0)
-                # roi_y = y-int(h_r/2.0)
-                # roi_w = w_r
-                # roi_h = h_r
-
-
-                label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train \
-                    if use_mask_method else roi_tmp_v2 #new label for landmark
-                label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 
-                # except:
-                #     output1 = img
-                #     print("output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE) Failed ")
-                #     #input()
-                #     IS_FAILED = True
-                #     return IS_FAILED
+                try:
+                     # output1 = img
+                    mask = 255 * np.ones(roi_l.shape, roi_l.dtype)
+                    center = (final_x,y)                
+                    #for i in range(100):
+                    output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE)                                           
+                    label_train[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_l_tmp_train \
+                        if use_mask_method else roi_tmp_v2 #new label for landmark
+                    label_colormap[y-int(h_r/2.0):y+int(h_r/2.0)+h_add,x-int(w_r/2.0):x+int(w_r/2.0)+w_add] = roi_tmp_v1 
+                except:
+                    output1 = img
+                    print("output1 = cv2.seamlessClone(roi_l, img, mask, center, cv2.MIXED_CLONE) Failed ")
+                    #input()
+                    IS_FAILED = True
+                    return IS_FAILED
             else:
                 output1 = img
                 IS_FAILED = True
