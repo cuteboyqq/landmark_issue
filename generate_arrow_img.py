@@ -599,7 +599,7 @@ def get_args():
     parser.add_argument('-savecolormap','--save-colormap',action='store_true',help='save generate semantic segment colormaps')
     parser.add_argument('-savemask','--save-mask',action='store_true',help='save generate semantic segment train masks')
     parser.add_argument('-savetxt','--save-txt',action='store_true',help='save landmark fake label.txt in yolo format cxywh')
-    parser.add_argument('-numimg','--num-img',type=int,default=40000,help='number of generate fake landmark images')
+    parser.add_argument('-numimg','--num-img',type=int,default=30000,help='number of generate fake landmark images')
     parser.add_argument('-useopencvratio','--use_opencvratio',type=float,default=0.50,help='ratio of using opencv method to generate landmark images')
     parser.add_argument('-usemask','--use-mask',type=bool,default=True,help='use mask method to generate landmark or not')
     parser.add_argument('-show','--show',action='store_true',help='show images result')

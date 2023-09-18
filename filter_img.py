@@ -2,6 +2,7 @@ import os
 import shutil
 import cv2
 import glob
+import numpy as np
 def Parse_Path(path):
     file = path.split("/")[-1]
     file_name = file.split(".")[0]
@@ -11,7 +12,10 @@ import numpy as np
 
 def FilterImg(img_dir,
               save_dir,
-              mask=True):
+              mask=True,
+              stop_sign=False,
+              equalize=True,
+              roi_th=None):
     os.makedirs(os.path.join(save_dir,"roi"),exist_ok=True)
     os.makedirs(os.path.join(save_dir,"mask"),exist_ok=True)
     c = 1
@@ -21,8 +25,8 @@ def FilterImg(img_dir,
         img = cv2.imread(img_path)
         h,w = img.shape[0],img.shape[1]
         print("{}:{}".format(c,img_path))
-        if h*w < 40*40:
-            print("too small (<40*40 pixels)")
+        if h*w < roi_th*roi_th or h/w < 0.10 or h/w > 10:
+            print("too small (<30*30 pixels) or ratio is <0.10 or <10.0, skip this ROI")
         else:
             #roi_dir = os.path.join(save_dir,"roi")
             #shutil.copy(img_path,roi_dir)
@@ -35,11 +39,49 @@ def FilterImg(img_dir,
                 print(img_gray_mean)
                 #var = ((img_gray - img_gray_mean) ** 2).mean()
                 #std_rgb = np.sqrt(var)
-                _,img_binary = cv2.threshold(img_gray,img_gray_mean+10,255,0)
+                if stop_sign:
+                    _,img_binary = cv2.threshold(img_gray,img_gray_mean,255,cv2.THRESH_BINARY_INV)
+                    dilate_erode=False
+                    if dilate_erode:
+                        kernel = np.ones((3,3), np.uint8)
+                        img_binary = cv2.dilate(img_binary, kernel, iterations = 10)
+                        img_binary = cv2.erode(img_binary, kernel, iterations = 10)
+                else:
+                    _,img_binary = cv2.threshold(img_gray,img_gray_mean+10,255,0)
+
+                #study code from https://cloud.tencent.com/developer/article/1016690
+                if stop_sign:
+                    contours, hierarchy = cv2.findContours(img_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+                    mask_img = np.zeros(img.shape, np.uint8)
+                    #cv2.drawContours(mask_img, contours, -1, (255,255,255),cv2.FILLED)
+                    #cv2.drawContours(mask_img, contours, -1, (255,255,255), 3)
+                    c_max = []
+                    max_area = 0
+                    max_cnt = 0
+                    c_max = []
+                    for i in range(len(contours)):
+                        cnt = contours[i]
+                        area = cv2.contourArea(cnt)
+
+                        # 处理掉小的轮廓区域，这个区域的大小自己定义。
+                        if(area < (h*2/3*w*2/3)):
+                            c_min = []
+                            c_min.append(cnt)
+                            # thickness不为-1时，表示画轮廓线，thickness的值表示线的宽度。
+                            cv2.drawContours(mask_img, c_min, -1, (0,0,0), thickness=-1)
+                            continue
+                        #
+                        c_max.append(cnt)
+                    cv2.drawContours(mask_img, c_max, -1, (255, 255, 255), thickness=-1)
                 mask_dir = os.path.join(save_dir,"mask")
-                cv2.imwrite(mask_dir+"/"+file,img_binary)
-                print("{}:Save mask".format(c))
-                equalize=True
+                GET_BEAUTIFUL_MASK=False
+                if np.mean(mask_img) > 100:
+                    GET_BEAUTIFUL_MASK=True
+
+                if GET_BEAUTIFUL_MASK:
+                    cv2.imwrite(mask_dir+"/"+file,mask_img)
+                    print("{}:Save mask".format(c))
+                #equalize=False
                 if equalize:
                     if img_gray_mean/1.0 +50 <=255:
                         img_tmp = int(img_gray_mean/1.0 + 50) * np.ones((int(img.shape[0]),int(img.shape[1]), 3), dtype=np.uint8)
@@ -64,8 +106,16 @@ def FilterImg(img_dir,
                     img[img_binary>20] = img[img_binary>20] + (value,value,value)
                     img[img_binary<=20] = img[img_binary<=20] - (value_bg,value_bg,value_bg)    
                     roi_dir = os.path.join(save_dir,"roi")
-                    cv2.imwrite(roi_dir+"/"+file,img)
-                    print("save new img")
+                    if GET_BEAUTIFUL_MASK:
+                        cv2.imwrite(roi_dir+"/"+file,img)
+                        print("save new img")
+                else:
+                    img[img_binary>20] = img[img_binary>20] 
+                    img[img_binary<=20] = img[img_binary<=20]  
+                    roi_dir = os.path.join(save_dir,"roi")
+                    if GET_BEAUTIFUL_MASK:
+                        cv2.imwrite(roi_dir+"/"+file,img)
+                        print("save new img")
                 #=====================================================================================
                 #Because it is already the ROI image, so l do not need use contour method to get ROI
                 #======================================================================================
@@ -95,8 +145,12 @@ def FilterImg(img_dir,
     return
 
 if __name__=="__main__":
-    img_dir = "./datasets/landmark_roi"
-    save_dir = "./datasets/landmark_roi_filtered_new"
+    img_dir = "./stop_sign"
+    save_dir = "./datasets/stop_sign_new_v878787"
+    stop_sign = True
     FilterImg(img_dir,
               save_dir, 
-              mask=True)
+              mask=True,
+              stop_sign=stop_sign,
+              equalize=False,
+              roi_th=15)

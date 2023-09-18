@@ -56,7 +56,7 @@ def get_args():
     parser.add_argument('-datatest','--data-test',help='custom test data)',\
         default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue')
     parser.add_argument('-imgdir','--img-dir',help='image directory that you want to processing)',\
-        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_img')
+        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/nuimages')
     parser.add_argument('-imgsize','--img-size',type=int,help='image size',default=64)
     parser.add_argument('-nc','--nc',type=int,help='num of channels',default=3)
     parser.add_argument('-model','--model',help='resnet,VGG16,repvgg,res2net',default='resnet')
@@ -275,7 +275,7 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
 
 def Get_Arrow_ROI_s(opts):
     print(opts.img_dir)
-    img_path_list = glob.glob(os.path.join(opts.img_dir,"*.png"))
+    img_path_list = glob.glob(os.path.join(opts.img_dir,"*.jpg"))
     print("img_path_list:{}".format(img_path_list))
     c = 1
     for img_path in img_path_list:

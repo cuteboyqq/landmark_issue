@@ -30,12 +30,15 @@ def Analysis_Img_Path_2(img_path):
     print(img_name)
     return img_dir_name,img,img_name,img_dir
 
+
+
+
 def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=False, num=10):
     print("aug_hsv not implemented")
     r = np.random.uniform(-1,1,3) * [hgain, sgain, vgain] + 1 #random gains
     
-    img = cv2.imread(img_path)
-    img = np.array(img)
+    img_cv2 = cv2.imread(img_path)
+    img = np.array(img_cv2)
     
     h, s, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     dtype = img.dtype # uint8
@@ -73,8 +76,13 @@ def augment_hsv(img_path, save_img_dir, hgain=0.5, sgain=0.5, vgain=0.5, do_he=F
         save_img_file = img_name + '_' + str(i) + '.jpg'
         save_img_file_path = os.path.join(save_dir,save_img_file)
         
-        if (i) > (num/5) and i!=(num): 
-            cv2.imwrite(save_img_file_path,result_img)
+        img_dir_name,img,img_name,img_dir = Analysis_Img_Path_2(img_path)
+        if not img_dir_name=="mask":
+            if (i) > (num/5) and i!=(num): 
+                cv2.imwrite(save_img_file_path,result_img)
+        else: # Save original Mask 
+            if (i) > (num/5) and i!=(num): 
+                cv2.imwrite(save_img_file_path,img_cv2)
         '''===================================save image====================================='''
         
     #Histogram equalization
@@ -245,7 +253,7 @@ def augment_resize(img_path, save_img_dir, resize_width_ratio, resize_height_rat
 
         save_img_file = img_name + '_resize.jpg' 
         save_img_file_path = os.path.join(save_img_dir,save_img_file)
-
+        
         cv2.imwrite(save_img_file_path,img_resize)
 
         new_folder_mask_name = "mask"
@@ -294,8 +302,8 @@ def get_args():
     parser = argparse.ArgumentParser()
     
     '''============================input img/output img parameters setting================================='''
-    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/la')
-    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/la_aug')
+    parser.add_argument('-imgdir','--img-dir',help='image dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_roi_backup/merge_split/val')
+    parser.add_argument('-savedir','--save-dir',help='save aug-img dir',default='/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/landmark_roi_backup_aug/val')
     
     '''===================blur parameter settings=========================================================='''
     parser.add_argument('-blur','--blur',help='enable blur augment',action='store_true')
@@ -306,7 +314,7 @@ def get_args():
     parser.add_argument('-fliptype','--flip-type',help='flip type: 0:lrud, 1:lr, 2:ud' ,default=1)
     '''===================hsv parameter settings=========================================================='''
     parser.add_argument('-hsv','--hsv',help='enable hsv augment',action='store_true')
-    parser.add_argument('-numv','--numv',help='num of v' ,default=2)
+    parser.add_argument('-numv','--numv',help='num of v' ,default=3)
     '''===================resize parameter settings========================================================='''
     parser.add_argument('-resize','--resize',help='enable resize augment',action='store_true')
     parser.add_argument('-resize_w','--resize_w',help='random shorter/larger num of pixel in width ratio' ,default=0.40)
@@ -349,12 +357,12 @@ if __name__=="__main__":
     #flip_type = 1
     #img_dir = "C:/TLR/datasets/roi-original"
     #save_img_dir = "C:/TLR/datasets"
-    pure_img_augmentation(False,#do blur
+    pure_img_augmentation(True,#do blur
                           blur_type,
                           blur_size,
                           False, #do flip
                           flip_type,
-                          False, #do hsv
+                          True, #do hsv
                           numv,
                           do_resize,
                           resize_width_ratio,
