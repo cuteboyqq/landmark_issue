@@ -76,9 +76,9 @@ def get_args():
     import argparse
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-videodir','--video-dir',help="input video path",default=r"C:\\datasets\\Taipei_Lane_Marking")
+    parser.add_argument('-videodir','--video-dir',help="input video path",default=r"C:\\datasets\\Kaohsiung_Night_Lane_Marking")
     parser.add_argument('-videopath','--video-path',help="input video path",default="/home/ali/datasets/train_video/LosAngeles_train/LosAngeles_train1.mp4")
-    parser.add_argument('-skipf','--skip-f',type=int,help="number of skp frame",default=5)
+    parser.add_argument('-skipf','--skip-f',type=int,help="number of skp frame",default=3)
     parser.add_argument('-yoloinfer','--yolo-infer',action='store_true',help="have yolo infer txt")
     parser.add_argument('-yolotxt','--yolo-txt',help="yolo infer label txt dir",default="/home/ali/YOLOV4/inference/LosAngeles_train1-infer/labels")
     parser.add_argument('-classtxt','--class-txt',help="class.txt path",default="/home/ali/datasets/train_video/classes.txt")

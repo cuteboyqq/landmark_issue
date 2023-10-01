@@ -4,7 +4,7 @@ import cv2
 import glob
 import numpy as np
 def Parse_Path(path):
-    file = path.split("/")[-1]
+    file = path.split(os.sep)[-1]
     file_name = file.split(".")[0]
     return file,file_name
 
@@ -48,7 +48,7 @@ def FilterImg(img_dir,
                         img_binary = cv2.erode(img_binary, kernel, iterations = 10)
                 else:
                     _,img_binary = cv2.threshold(img_gray,img_gray_mean+10,255,0)
-
+                mask_dir = os.path.join(save_dir,"mask")
                 #study code from https://cloud.tencent.com/developer/article/1016690
                 if stop_sign:
                     contours, hierarchy = cv2.findContours(img_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -73,13 +73,23 @@ def FilterImg(img_dir,
                         #
                         c_max.append(cnt)
                     cv2.drawContours(mask_img, c_max, -1, (255, 255, 255), thickness=-1)
-                mask_dir = os.path.join(save_dir,"mask")
-                GET_BEAUTIFUL_MASK=False
-                if np.mean(mask_img) > 100:
-                    GET_BEAUTIFUL_MASK=True
+                    GET_BEAUTIFUL_MASK=False
+                    if np.mean(mask_img) > 100:
+                        GET_BEAUTIFUL_MASK=True
 
+                    if GET_BEAUTIFUL_MASK:
+                        cv2.imwrite(mask_dir+"/"+file,mask_img)
+                        print("{}:Save mask".format(c))    
+                
+
+                GET_BEAUTIFUL_MASK=True
                 if GET_BEAUTIFUL_MASK:
-                    cv2.imwrite(mask_dir+"/"+file,mask_img)
+                    os.makedirs(mask_dir,exist_ok=True)
+                    print(mask_dir)
+                    print("file:{}".format(file))
+                    save_mask_path = os.path.join(mask_dir,file)
+                    print("save_mask_path:{}".format(save_mask_path))
+                    cv2.imwrite(save_mask_path,img_binary)
                     print("{}:Save mask".format(c))
                 #equalize=False
                 if equalize:
@@ -145,12 +155,12 @@ def FilterImg(img_dir,
     return
 
 if __name__=="__main__":
-    img_dir = "./stop_sign"
-    save_dir = "./datasets/stop_sign_new_v878787"
-    stop_sign = True
+    img_dir = "C:\\datasets\\Kaohsiung_Night_Lane_Marking\\Kaohsiung_Night_LaneMarking_ROI\\roi"
+    save_dir = "C:\\datasets\\Kaohsiung_Night_Lane_Marking\\New_ROI"
+    stop_sign = False
     FilterImg(img_dir,
               save_dir, 
               mask=True,
               stop_sign=stop_sign,
-              equalize=False,
+              equalize=True,
               roi_th=15)
