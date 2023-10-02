@@ -21,6 +21,7 @@ def FilterImg(img_dir,
     c = 1
     img_path_list = glob.glob(os.path.join(img_dir,'*.jpg'))
     for img_path in img_path_list:
+        print(img_path)
         file,file_name = Parse_Path(img_path)
         img = cv2.imread(img_path)
         h,w = img.shape[0],img.shape[1]
@@ -40,12 +41,13 @@ def FilterImg(img_dir,
                 #var = ((img_gray - img_gray_mean) ** 2).mean()
                 #std_rgb = np.sqrt(var)
                 if stop_sign:
-                    _,img_binary = cv2.threshold(img_gray,img_gray_mean,255,cv2.THRESH_BINARY_INV)
+                    _,img_binary = cv2.threshold(img_gray,img_gray_mean,255,cv2.THRESH_BINARY_INV) #THRESH_BINARY_INV
                     dilate_erode=False
                     if dilate_erode:
                         kernel = np.ones((3,3), np.uint8)
                         img_binary = cv2.dilate(img_binary, kernel, iterations = 10)
                         img_binary = cv2.erode(img_binary, kernel, iterations = 10)
+                        
                 else:
                     _,img_binary = cv2.threshold(img_gray,img_gray_mean+10,255,0)
                 mask_dir = os.path.join(save_dir,"mask")
@@ -58,7 +60,6 @@ def FilterImg(img_dir,
                     c_max = []
                     max_area = 0
                     max_cnt = 0
-                    c_max = []
                     for i in range(len(contours)):
                         cnt = contours[i]
                         area = cv2.contourArea(cnt)
@@ -78,20 +79,22 @@ def FilterImg(img_dir,
                         GET_BEAUTIFUL_MASK=True
 
                     if GET_BEAUTIFUL_MASK:
+                        kernel = np.ones((3,3), np.uint8)
+                        mask_img = cv2.dilate(mask_img, kernel, iterations = 2)
                         cv2.imwrite(mask_dir+"/"+file,mask_img)
                         print("{}:Save mask".format(c))    
                 
-
-                GET_BEAUTIFUL_MASK=True
-                if GET_BEAUTIFUL_MASK:
-                    os.makedirs(mask_dir,exist_ok=True)
-                    print(mask_dir)
-                    print("file:{}".format(file))
-                    save_mask_path = os.path.join(mask_dir,file)
-                    print("save_mask_path:{}".format(save_mask_path))
-                    cv2.imwrite(save_mask_path,img_binary)
-                    print("{}:Save mask".format(c))
-                #equalize=False
+                if not stop_sign:
+                    GET_BEAUTIFUL_MASK=True
+                    if GET_BEAUTIFUL_MASK:
+                        os.makedirs(mask_dir,exist_ok=True)
+                        print(mask_dir)
+                        print("file:{}".format(file))
+                        save_mask_path = os.path.join(mask_dir,file)
+                        print("save_mask_path:{}".format(save_mask_path))
+                        cv2.imwrite(save_mask_path,img_binary)
+                        print("{}:Save mask".format(c))
+                    
                 if equalize:
                     if img_gray_mean/1.0 +50 <=255:
                         img_tmp = int(img_gray_mean/1.0 + 50) * np.ones((int(img.shape[0]),int(img.shape[1]), 3), dtype=np.uint8)
@@ -155,12 +158,12 @@ def FilterImg(img_dir,
     return
 
 if __name__=="__main__":
-    img_dir = "C:\\datasets\\Kaohsiung_Night_Lane_Marking\\Kaohsiung_Night_LaneMarking_ROI\\roi"
-    save_dir = "C:\\datasets\\Kaohsiung_Night_Lane_Marking\\New_ROI"
-    stop_sign = False
+    img_dir = "/home/ali/Downloads/stop_sign"
+    save_dir = "/home/ali/Downloads/stop_sign_new"
+    stop_sign = True
     FilterImg(img_dir,
               save_dir, 
               mask=True,
               stop_sign=stop_sign,
-              equalize=True,
+              equalize=False,
               roi_th=15)
