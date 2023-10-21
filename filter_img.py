@@ -158,12 +158,12 @@ def FilterImg(img_dir,
     return
 
 if __name__=="__main__":
-    img_dir = "/home/ali/Downloads/stop_sign"
-    save_dir = "/home/ali/Downloads/stop_sign_new"
-    stop_sign = True
+    img_dir = "/home/ali/Downloads/roi_backup/merge_openlanev2_taiwan"
+    save_dir = "/home/ali/Downloads/lanemarking_roi_new"
+    stop_sign = False
     FilterImg(img_dir,
               save_dir, 
               mask=True,
               stop_sign=stop_sign,
               equalize=False,
-              roi_th=15)
+              roi_th=80)
