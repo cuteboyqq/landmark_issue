@@ -56,7 +56,7 @@ def get_args():
     parser.add_argument('-datatest','--data-test',help='custom test data)',\
         default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue')
     parser.add_argument('-imgdir','--img-dir',help='image directory that you want to processing)',\
-        default=r'/home/ali/Projects/GitHub_Code/ali/landmark_issue/datasets/nuimages')
+        default=r'/home/ali/Projects/GitHub_Code/ali/CopyPaste/tools/nuImage_data_include_pedestrain/images/100k/train')
     parser.add_argument('-imgsize','--img-size',type=int,help='image size',default=64)
     parser.add_argument('-nc','--nc',type=int,help='num of channels',default=3)
     parser.add_argument('-model','--model',help='resnet,VGG16,repvgg,res2net',default='resnet')
@@ -113,7 +113,7 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
 
     imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) #Convert BGR to Gray image
 
-    ret, thresh = cv2.threshold(imgray, 180, 255, 0) #imput Gray image, output Binary images (Mask)
+    ret, thresh = cv2.threshold(imgray, 170, 255, 0) #imput Gray image, output Binary images (Mask)
 
     kernel = np.ones((3, 3), np.uint8)
     
@@ -199,19 +199,31 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
         small_size = 200#img_h*img_w/100
         large_size = 110000#img_h*img_w/1
         print("w*h:{}".format(w*h))
-        if w*h > small_size and w*h < large_size and y> (edge.shape[0]*1.0/5.0) \
+        white_count = 0
+        lane_marking_likely = True
+        if w*h > small_size and w*h < large_size and y> (edge.shape[0]*2.0/5.0) \
             and float(w/h)>small_r and float(w/h)<large_r:
             
             print(x*y)
            
             roi = raw_img[y:y+h, x:x+w]
+            # White pixel ratio
+            # for i2 in range(roi.shape[0]):
+            #     for j2 in range(roi.shape[1]):
+            #         if roi[i2][j2][0] >= 170 and roi[i2][j2][1] >= 170 and roi[i2][j2][2] >= 170:
+            #             white_count+=1
+            
+            # white_ratio = float(white_count/(roi.shape[0]*roi.shape[1]))
+            # if white_ratio>=0.4 and white_ratio<=0.7:
+            #     lane_marking_likely=True
+
             print("{} roi".format(count))
             index = i
-            if save_roi:
+            if save_roi and lane_marking_likely:
                 cv2.imwrite("roi_dirty/"+str(count)+".jpg", roi)  # Save roi
             
             binary = thresh[y:y+h, x:x+w]
-            if save_mask:
+            if save_mask and lane_marking_likely:
                 cv2.imwrite("mask_dirty/"+str(count)+".jpg", binary)   # Save mask
           
             # roi_2 = raw_img[y:y+h, x:x+w]
@@ -225,26 +237,27 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
             (int(boundRect[i][0]+boundRect[i][2]), int(boundRect[i][1]+boundRect[i][3])), color, 1)
 
             #model inference
-            class_dict={0:"landmark",1:"others"}
-            os.makedirs("./runs/predict",exist_ok=True)
-            for i in class_dict:
-                os.makedirs("./runs/predict/"+str(i)+"/roi",exist_ok=True)
-                os.makedirs("./runs/predict/"+str(i)+"/mask",exist_ok=True)
-            with torch.no_grad():
-                model.eval()
-                roi_ = roi# READ IMAGE
-                roi_ = Image.fromarray(roi_.astype('uint8'), 'RGB')
-                trans_roi = pre_process(roi_)
-                trans_roi = trans_roi.view([1,opts.nc,opts.img_size,opts.img_size]).cuda()
-                pred = model(trans_roi)
-                pred_cls = pred.argmax() #get the max score label
-                print("predict result : {}".format(class_dict[int(pred_cls.cpu().numpy())]))
-                print("{} after model inference".format(count))
-                shutil.copy("./roi_dirty/"+str(count)+".jpg","./runs/predict/"+str(int(pred_cls.cpu().numpy()))+"/roi/")
-                if save_mask:
-                    shutil.copy("./mask_dirty/"+str(count)+".jpg","./runs/predict/"+str(int(pred_cls.cpu().numpy()))+"/mask/")
-            count+=1
-            cv2.drawContours(img, contours_poly, i%255 , cv2.CHAIN_APPROX_SIMPLE)
+            if lane_marking_likely:
+                class_dict={0:"landmark",1:"others"}
+                os.makedirs("./runs/predict",exist_ok=True)
+                for i in class_dict:
+                    os.makedirs("./runs/predict/"+str(i)+"/roi",exist_ok=True)
+                    os.makedirs("./runs/predict/"+str(i)+"/mask",exist_ok=True)
+                with torch.no_grad():
+                    model.eval()
+                    roi_ = roi# READ IMAGE
+                    roi_ = Image.fromarray(roi_.astype('uint8'), 'RGB')
+                    trans_roi = pre_process(roi_)
+                    trans_roi = trans_roi.view([1,opts.nc,opts.img_size,opts.img_size]).cuda()
+                    pred = model(trans_roi)
+                    pred_cls = pred.argmax() #get the max score label
+                    print("predict result : {}".format(class_dict[int(pred_cls.cpu().numpy())]))
+                    print("{} after model inference".format(count))
+                    shutil.copy("./roi_dirty/"+str(count)+".jpg","./runs/predict/"+str(int(pred_cls.cpu().numpy()))+"/roi/")
+                    if save_mask:
+                        shutil.copy("./mask_dirty/"+str(count)+".jpg","./runs/predict/"+str(int(pred_cls.cpu().numpy()))+"/mask/")
+                count+=1
+                cv2.drawContours(img, contours_poly, i%255 , cv2.CHAIN_APPROX_SIMPLE)
             
         
         #if w*h > small_size and w*h < large_size and y> (edge.shape[0]*1.0/5.0) \
@@ -260,16 +273,16 @@ def Get_Arrow_ROI(img_path = './datasets/landmark_img/Screenshot from 2023-08-10
         #========================================
         # 顯示圖片
         cv2.imshow("th",thresh)
-        cv2.imshow('drawing',drawing)
-        cv2.imshow('My Image', img)
-        cv2.imshow('Mask', mask)
-        cv2.imshow('blur Image', blurred)
-        cv2.imshow('Gray Image', imgray)
-        cv2.imshow('Canny Image', edge) 
+        #cv2.imshow('drawing',drawing)
+        #cv2.imshow('My Image', img)
+        #cv2.imshow('Mask', mask)
+        #cv2.imshow('blur Image', blurred)
+        #cv2.imshow('Gray Image', imgray)
+        #cv2.imshow('Canny Image', edge) 
 
 
         # 按下任意鍵則關閉所有視窗
-        cv2.waitKey(0)
+        cv2.waitKey(500)
         cv2.destroyAllWindows()
     return count
 
